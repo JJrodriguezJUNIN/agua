@@ -25,7 +25,7 @@ const Index = () => {
 
   const handleLogin = () => {
     // En una aplicación real, estas credenciales deberían estar en un lugar seguro
-    if (username === "admin" && password === "admin123") {
+    if (username === "juan" && password === "361045") {
       setIsAdmin(true);
       setShowLoginDialog(false);
       toast({
