@@ -5,13 +5,43 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import { Droplet, Upload, DollarSign, Users } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import initialData from "../data/water.json";
 import { WaterConfig, Person } from "../types/water";
 
 const Index = () => {
   const [data, setData] = useState<WaterConfig>(initialData);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { toast } = useToast();
+
+  const handleLogin = () => {
+    // En una aplicación real, estas credenciales deberían estar en un lugar seguro
+    if (username === "admin" && password === "admin123") {
+      setIsAdmin(true);
+      setShowLoginDialog(false);
+      toast({
+        title: "Acceso concedido",
+        description: "Has ingresado como administrador.",
+      });
+    } else {
+      toast({
+        title: "Error de acceso",
+        description: "Credenciales incorrectas.",
+        variant: "destructive",
+      });
+    }
+    setUsername("");
+    setPassword("");
+  };
 
   const calculatePersonAmount = () => {
     return (data.bottlePrice * data.bottleCount) / data.people.length;
@@ -36,7 +66,6 @@ const Index = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      // En una implementación real, aquí subirías el archivo a un servidor
       setData((prev) => ({
         ...prev,
         people: prev.people.map((p) =>
@@ -64,13 +93,47 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-4">
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Acceso Administrador</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Input
+              placeholder="Usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleLogin}>Ingresar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Sistema de Pago de Agua</span>
             <Button
               variant="outline"
-              onClick={() => setIsAdmin(!isAdmin)}
+              onClick={() => {
+                if (!isAdmin) {
+                  setShowLoginDialog(true);
+                } else {
+                  setIsAdmin(false);
+                  toast({
+                    title: "Sesión finalizada",
+                    description: "Has salido del modo administrador.",
+                  });
+                }
+              }}
             >
               {isAdmin ? "Modo Usuario" : "Modo Admin"}
             </Button>
