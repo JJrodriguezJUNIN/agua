@@ -4,13 +4,13 @@
   "people": [
     {
       "id": "1",
-      "name": "Juan Pérez",
+      "name": "Juan Rodriguez",
       "avatar": "https://images.unsplash.com/photo-1649972904349-6e44c42644a7",
       "hasPaid": false
     },
     {
       "id": "2",
-      "name": "María García",
+      "name": "Emanuel Moyano",
       "avatar": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
       "hasPaid": false
     }
