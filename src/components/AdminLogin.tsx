@@ -1,0 +1,72 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+
+interface AdminLoginProps {
+  showLoginDialog: boolean;
+  setShowLoginDialog: (show: boolean) => void;
+  onLoginSuccess: () => void;
+}
+
+export const AdminLogin = ({
+  showLoginDialog,
+  setShowLoginDialog,
+  onLoginSuccess,
+}: AdminLoginProps) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const { toast } = useToast();
+
+  const handleLogin = () => {
+    if (username === "juan" && password === "361045") {
+      onLoginSuccess();
+      setShowLoginDialog(false);
+      toast({
+        title: "Acceso concedido",
+        description: "Has ingresado como administrador.",
+      });
+    } else {
+      toast({
+        title: "Error de acceso",
+        description: "Credenciales incorrectas.",
+        variant: "destructive",
+      });
+    }
+    setUsername("");
+    setPassword("");
+  };
+
+  return (
+    <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Acceso Administrador</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <Input
+            placeholder="Usuario"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <Input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <DialogFooter>
+          <Button onClick={handleLogin}>Ingresar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
