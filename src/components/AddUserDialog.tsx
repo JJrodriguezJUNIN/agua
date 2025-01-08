@@ -23,14 +23,14 @@ export const AddUserDialog = ({
   onAddUser,
 }: AddUserDialogProps) => {
   const [name, setName] = useState("");
-  const [avatar, setAvatar] = useState("");
+  const [avatar, setAvatar] = useState("https://images.unsplash.com/photo-1649972904349-6e44c42644a7");
   const { toast } = useToast();
 
   const handleAddUser = () => {
-    if (!name || !avatar) {
+    if (!name) {
       toast({
         title: "Error",
-        description: "Por favor complete todos los campos",
+        description: "Por favor ingrese el nombre del usuario",
         variant: "destructive",
       });
       return;
@@ -44,7 +44,7 @@ export const AddUserDialog = ({
     });
 
     setName("");
-    setAvatar("");
+    setAvatar("https://images.unsplash.com/photo-1649972904349-6e44c42644a7");
     onOpenChange(false);
     
     toast({
@@ -66,7 +66,7 @@ export const AddUserDialog = ({
             onChange={(e) => setName(e.target.value)}
           />
           <Input
-            placeholder="URL del avatar"
+            placeholder="URL del avatar (opcional)"
             value={avatar}
             onChange={(e) => setAvatar(e.target.value)}
           />
