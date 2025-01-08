@@ -9,12 +9,17 @@ import { AdminLogin } from "@/components/AdminLogin";
 import { WaterStats } from "@/components/WaterStats";
 import { UserCard } from "@/components/UserCard";
 import { AddUserDialog } from "@/components/AddUserDialog";
+import { EditUserDialog } from "@/components/EditUserDialog";
+import { PaymentHistory } from "@/components/PaymentHistory";
 
 const Index = () => {
   const [data, setData] = useState<WaterConfig>(initialData);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
+  const [showEditUserDialog, setShowEditUserDialog] = useState(false);
+  const [showPaymentHistoryDialog, setShowPaymentHistoryDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<Person | null>(null);
   const { toast } = useToast();
 
   const calculatePersonAmount = () => {
@@ -24,12 +29,26 @@ const Index = () => {
   };
 
   const handlePayment = (personId: string) => {
+    const amount = calculatePersonAmount();
+    const payment = {
+      date: new Date().toISOString(),
+      amount,
+      receipt: data.people.find(p => p.id === personId)?.receipt
+    };
+
     setData((prev) => ({
       ...prev,
       people: prev.people.map((p) =>
-        p.id === personId ? { ...p, hasPaid: true } : p
+        p.id === personId
+          ? {
+              ...p,
+              hasPaid: true,
+              paymentHistory: [...(p.paymentHistory || []), payment],
+            }
+          : p
       ),
     }));
+    
     toast({
       title: "Pago registrado",
       description: "El pago ha sido registrado exitosamente.",
@@ -72,9 +91,38 @@ const Index = () => {
       const id = (data.people.length + 1).toString();
       setData((prev) => ({
         ...prev,
-        people: [...prev.people, { ...newUser, id }],
+        people: [...prev.people, { ...newUser, id, paymentHistory: [] }],
       }));
     }
+  };
+
+  const handleEditUser = (updatedUser: Person) => {
+    if (isAdmin) {
+      setData((prev) => ({
+        ...prev,
+        people: prev.people.map((p) =>
+          p.id === updatedUser.id ? updatedUser : p
+        ),
+      }));
+    }
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    if (isAdmin) {
+      setData((prev) => ({
+        ...prev,
+        people: prev.people.filter((p) => p.id !== userId),
+      }));
+      toast({
+        title: "Usuario eliminado",
+        description: "El usuario ha sido eliminado exitosamente.",
+      });
+    }
+  };
+
+  const handleShowHistory = (user: Person) => {
+    setSelectedUser(user);
+    setShowPaymentHistoryDialog(true);
   };
 
   return (
@@ -91,10 +139,27 @@ const Index = () => {
         onAddUser={handleAddUser}
       />
 
+      {selectedUser && (
+        <>
+          <EditUserDialog
+            open={showEditUserDialog}
+            onOpenChange={setShowEditUserDialog}
+            onEditUser={handleEditUser}
+            user={selectedUser}
+          />
+          <PaymentHistory
+            open={showPaymentHistoryDialog}
+            onOpenChange={setShowPaymentHistoryDialog}
+            payments={selectedUser.paymentHistory || []}
+            userName={selectedUser.name}
+          />
+        </>
+      )}
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Sistema de Pago de Agua</span>
+            <span>Pago de Agua Region Sanitaria III</span>
             <div className="flex gap-2">
               {isAdmin && (
                 <Button
@@ -142,7 +207,14 @@ const Index = () => {
             person={person}
             onFileUpload={handleFileUpload}
             onPayment={handlePayment}
+            onEdit={(user) => {
+              setSelectedUser(user);
+              setShowEditUserDialog(true);
+            }}
+            onDelete={handleDeleteUser}
+            onShowHistory={handleShowHistory}
             amount={calculatePersonAmount()}
+            isAdmin={isAdmin}
           />
         ))}
       </div>

@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload } from "lucide-react";
+import { Upload, Pencil, Trash2, History } from "lucide-react";
 import { Person } from "../types/water";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -9,14 +9,22 @@ interface UserCardProps {
   person: Person;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, id: string) => void;
   onPayment: (id: string) => void;
+  onEdit: (person: Person) => void;
+  onDelete: (id: string) => void;
+  onShowHistory: (person: Person) => void;
   amount: number;
+  isAdmin: boolean;
 }
 
 export const UserCard = ({
   person,
   onFileUpload,
   onPayment,
+  onEdit,
+  onDelete,
+  onShowHistory,
   amount,
+  isAdmin,
 }: UserCardProps) => {
   return (
     <Card>
@@ -48,6 +56,31 @@ export const UserCard = ({
                   Pagar ${amount}
                 </Button>
               </>
+            )}
+            {isAdmin && (
+              <div className="flex gap-2 mt-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onEdit(person)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onDelete(person.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onShowHistory(person)}
+                >
+                  <History className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </div>
         </div>
