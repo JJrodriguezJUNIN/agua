@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Upload, Pencil, Trash2, History } from "lucide-react";
 import { Person } from "../types/water";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface UserCardProps {
   person: Person;
@@ -26,8 +27,13 @@ export const UserCard = ({
   amount,
   isAdmin,
 }: UserCardProps) => {
+  const hasPendingPayment = !person.hasPaid && person.pendingAmount;
+
   return (
-    <Card>
+    <Card className={cn(
+      hasPendingPayment ? "bg-red-50" : "",
+      "transition-colors duration-200"
+    )}>
       <CardContent className="pt-6">
         <div className="flex flex-col items-center gap-4">
           <Avatar className="h-20 w-20">

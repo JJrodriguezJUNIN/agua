@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Droplet, DollarSign, Users } from "lucide-react";
+import { Droplet, DollarSign, Users, Calculator } from "lucide-react";
 import { WaterConfig } from "../types/water";
 
 interface WaterStatsProps {
@@ -17,8 +17,10 @@ export const WaterStats = ({
   updateBottleCount,
   calculatePersonAmount,
 }: WaterStatsProps) => {
+  const totalAmount = data.bottlePrice * data.bottleCount;
+
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-4">
       <div className="flex items-center gap-2">
         <Droplet className="h-4 w-4" />
         <span>Bidones: {data.bottleCount}</span>
@@ -42,6 +44,10 @@ export const WaterStats = ({
             className="w-24"
           />
         )}
+      </div>
+      <div className="flex items-center gap-2">
+        <Calculator className="h-4 w-4" />
+        <span>Monto total: ${totalAmount}</span>
       </div>
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4" />
