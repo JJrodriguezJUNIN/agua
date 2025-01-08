@@ -39,6 +39,16 @@ export const UserCard = ({
             <span className={person.hasPaid ? "text-green-500" : "text-red-500"}>
               {person.hasPaid ? "Pagado" : "Pendiente"}
             </span>
+            {person.lastPaymentMonth && (
+              <span className="text-sm text-gray-600">
+                Último pago: {person.lastPaymentMonth}
+              </span>
+            )}
+            {person.pendingAmount && !person.hasPaid && (
+              <span className="text-sm text-red-600">
+                Monto pendiente: ${person.pendingAmount}
+              </span>
+            )}
             {!person.hasPaid && (
               <>
                 <div className="flex items-center gap-2">

@@ -11,6 +11,8 @@ import { UserCard } from "@/components/UserCard";
 import { AddUserDialog } from "@/components/AddUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { PaymentHistory } from "@/components/PaymentHistory";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const Index = () => {
   const [data, setData] = useState<WaterConfig>(initialData);
@@ -28,12 +30,18 @@ const Index = () => {
       : 0;
   };
 
+  const getCurrentMonth = () => {
+    return format(new Date(), "MMMM yyyy", { locale: es });
+  };
+
   const handlePayment = (personId: string) => {
     const amount = calculatePersonAmount();
+    const currentMonth = getCurrentMonth();
     const payment = {
       date: new Date().toISOString(),
       amount,
-      receipt: data.people.find(p => p.id === personId)?.receipt
+      receipt: data.people.find(p => p.id === personId)?.receipt,
+      month: currentMonth
     };
 
     setData((prev) => ({
@@ -43,6 +51,8 @@ const Index = () => {
           ? {
               ...p,
               hasPaid: true,
+              lastPaymentMonth: currentMonth,
+              pendingAmount: undefined,
               paymentHistory: [...(p.paymentHistory || []), payment],
             }
           : p
@@ -51,7 +61,7 @@ const Index = () => {
     
     toast({
       title: "Pago registrado",
-      description: "El pago ha sido registrado exitosamente.",
+      description: `El pago del mes de ${currentMonth} ha sido registrado exitosamente.`,
     });
   };
 
@@ -89,9 +99,15 @@ const Index = () => {
   const handleAddUser = (newUser: Omit<Person, "id">) => {
     if (isAdmin) {
       const id = (data.people.length + 1).toString();
+      const currentMonth = getCurrentMonth();
       setData((prev) => ({
         ...prev,
-        people: [...prev.people, { ...newUser, id, paymentHistory: [] }],
+        people: [...prev.people, { 
+          ...newUser, 
+          id, 
+          pendingAmount: calculatePersonAmount(),
+          paymentHistory: [] 
+        }],
       }));
     }
   };

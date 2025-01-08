@@ -40,6 +40,7 @@ export const AddUserDialog = ({
       name,
       avatar,
       hasPaid: false,
+      paymentHistory: [],
     });
 
     setName("");

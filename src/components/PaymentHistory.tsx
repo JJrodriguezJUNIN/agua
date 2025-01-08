@@ -6,6 +6,8 @@ import {
 } from "@/components/ui/dialog";
 import { Payment } from "../types/water";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface PaymentHistoryProps {
   open: boolean;
@@ -26,6 +28,12 @@ export const PaymentHistory = ({
         <DialogHeader>
           <DialogTitle>Historial de Pagos - {userName}</DialogTitle>
         </DialogHeader>
+        <div className="mb-4 p-4 bg-yellow-50 rounded-md">
+          <p className="text-sm text-yellow-800">
+            💡 Guía: Este historial muestra todos los pagos realizados. Los pagos se registran mensualmente.
+            Cada registro incluye el monto pagado, la fecha y el mes correspondiente.
+          </p>
+        </div>
         <ScrollArea className="h-[300px] w-full rounded-md border p-4">
           {payments.length === 0 ? (
             <p className="text-center text-gray-500">No hay pagos registrados</p>
@@ -41,7 +49,10 @@ export const PaymentHistory = ({
                       ${payment.amount}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {new Date(payment.date).toLocaleDateString()}
+                      {format(new Date(payment.date), "d 'de' MMMM 'de' yyyy", { locale: es })}
+                    </p>
+                    <p className="text-sm text-blue-600">
+                      Mes correspondiente: {payment.month}
                     </p>
                   </div>
                   {payment.receipt && (

@@ -2,6 +2,7 @@ export interface Payment {
   date: string;
   amount: number;
   receipt?: string;
+  month: string;
 }
 
 export interface Person {
@@ -11,6 +12,9 @@ export interface Person {
   hasPaid: boolean;
   receipt?: string;
   paymentHistory: Payment[];
+  Dispenser?: string;
+  lastPaymentMonth?: string;
+  pendingAmount?: number;
 }
 
 export interface WaterConfig {
