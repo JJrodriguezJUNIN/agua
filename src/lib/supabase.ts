@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { Person, Payment, WaterConfig } from '../types/water';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = 'https://fsvjoabunvedifukozxk.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzdmpvYWJ1bnZlZGlmdWtvenhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMzk4MTIsImV4cCI6MjA1MTkxNTgxMn0.Topvn0Hb5FqB2kFndUgjV1zlpkXneCpfizyQxHSU-gc';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
