@@ -12,6 +12,8 @@ import { PaymentHistory } from "@/components/PaymentHistory";
 import { useWaterData } from "@/hooks/useWaterData";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Index = () => {
   const {
@@ -25,7 +27,7 @@ const Index = () => {
     uploadFile
   } = useWaterData();
 
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin, user } = useAuth();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
@@ -43,6 +45,11 @@ const Index = () => {
   };
 
   const handlePayment = async (personId: string) => {
+    if (!user) {
+      toast.error("Debes iniciar sesión para realizar esta acción");
+      return;
+    }
+
     const amount = calculatePersonAmount();
     const currentMonth = getCurrentMonth();
     const person = people?.find(p => p.id === personId);
@@ -55,15 +62,20 @@ const Index = () => {
         month: currentMonth
       };
 
-      await updatePerson({
-        id: personId,
-        updates: {
-          hasPaid: true,
-          lastPaymentMonth: currentMonth,
-          pendingAmount: undefined,
-          paymentHistory: [...(person.paymentHistory || []), payment],
-        }
-      });
+      try {
+        await updatePerson({
+          id: personId,
+          updates: {
+            hasPaid: true,
+            lastPaymentMonth: currentMonth,
+            pendingAmount: undefined,
+            paymentHistory: [...(person.paymentHistory || []), payment],
+          }
+        });
+      } catch (error) {
+        toast.error("Error al procesar el pago");
+        console.error(error);
+      }
     }
   };
 
@@ -71,14 +83,24 @@ const Index = () => {
     e: React.ChangeEvent<HTMLInputElement>,
     personId: string
   ) => {
+    if (!user) {
+      toast.error("Debes iniciar sesión para realizar esta acción");
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (file) {
-      const receiptUrl = await uploadFile(file);
-      if (receiptUrl) {
-        await updatePerson({
-          id: personId,
-          updates: { receipt: receiptUrl }
-        });
+      try {
+        const receiptUrl = await uploadFile(file);
+        if (receiptUrl) {
+          await updatePerson({
+            id: personId,
+            updates: { receipt: receiptUrl }
+          });
+        }
+      } catch (error) {
+        toast.error("Error al subir el archivo");
+        console.error(error);
       }
     }
   };
@@ -87,14 +109,27 @@ const Index = () => {
     return <div>Cargando...</div>;
   }
 
+  if (!user) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Iniciar Sesión</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AdminLogin
+              showLoginDialog={true}
+              setShowLoginDialog={() => {}}
+              onLoginSuccess={() => {}}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-4">
-      <AdminLogin
-        showLoginDialog={showLoginDialog}
-        setShowLoginDialog={setShowLoginDialog}
-        onLoginSuccess={() => setIsAdmin(true)}
-      />
-
       <AddUserDialog
         open={showAddUserDialog}
         onOpenChange={setShowAddUserDialog}
@@ -132,18 +167,6 @@ const Index = () => {
                   Agregar Usuario
                 </Button>
               )}
-              <Button
-                variant="outline"
-                onClick={() => {
-                  if (!isAdmin) {
-                    setShowLoginDialog(true);
-                  } else {
-                    setIsAdmin(false);
-                  }
-                }}
-              >
-                {isAdmin ? "Modo Usuario" : "Modo Admin"}
-              </Button>
             </div>
           </CardTitle>
         </CardHeader>

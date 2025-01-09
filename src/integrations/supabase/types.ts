@@ -9,7 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      people: {
+        Row: {
+          avatar: string
+          has_paid: boolean
+          id: string
+          last_payment_month: string | null
+          name: string
+          payment_history: Json[] | null
+          pending_amount: number | null
+          receipt: string | null
+        }
+        Insert: {
+          avatar: string
+          has_paid?: boolean
+          id?: string
+          last_payment_month?: string | null
+          name: string
+          payment_history?: Json[] | null
+          pending_amount?: number | null
+          receipt?: string | null
+        }
+        Update: {
+          avatar?: string
+          has_paid?: boolean
+          id?: string
+          last_payment_month?: string | null
+          name?: string
+          payment_history?: Json[] | null
+          pending_amount?: number | null
+          receipt?: string | null
+        }
+        Relationships: []
+      }
+      water_config: {
+        Row: {
+          bottle_count: number
+          bottle_price: number
+          id: number
+        }
+        Insert: {
+          bottle_count?: number
+          bottle_price?: number
+          id?: number
+        }
+        Update: {
+          bottle_count?: number
+          bottle_price?: number
+          id?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
