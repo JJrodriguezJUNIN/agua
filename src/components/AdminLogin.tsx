@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AdminLoginProps {
   showLoginDialog: boolean;
@@ -24,16 +25,18 @@ export const AdminLogin = ({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
+  const { signIn } = useAuth();
 
-  const handleLogin = () => {
-    if (username === "juan" && password === "361045") {
+  const handleLogin = async () => {
+    try {
+      await signIn(username, password);
       onLoginSuccess();
       setShowLoginDialog(false);
       toast({
         title: "Acceso concedido",
         description: "Has ingresado como administrador.",
       });
-    } else {
+    } catch (error) {
       toast({
         title: "Error de acceso",
         description: "Credenciales incorrectas.",

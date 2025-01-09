@@ -5,7 +5,7 @@ import { Session, User } from "@supabase/supabase-js";
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
 }
@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsAdmin(session?.user?.email === "admin@example.com");
+      setIsAdmin(session?.user?.email === "juan@admin.com");
     });
 
     const {
@@ -29,18 +29,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsAdmin(session?.user?.email === "admin@example.com");
+      setIsAdmin(session?.user?.email === "juan@admin.com");
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+  const signIn = async (username: string, password: string) => {
+    // For the specific admin user, we'll use a predefined email
+    if (username === "juan" && password === "361045") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: "juan@admin.com",
+        password: "361045",
+      });
+      if (error) throw error;
+    } else {
+      throw new Error("Invalid credentials");
+    }
   };
 
   const signOut = async () => {
