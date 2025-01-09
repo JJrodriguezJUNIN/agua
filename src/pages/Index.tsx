@@ -22,7 +22,7 @@ const Index = () => {
     addPerson,
     updatePerson,
     deletePerson,
-    handleFileUpload
+    uploadFile
   } = useWaterData();
 
   const [isAdmin, setIsAdmin] = useState(false);
@@ -73,7 +73,7 @@ const Index = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const receiptUrl = await handleFileUpload(file);
+      const receiptUrl = await uploadFile(file);
       if (receiptUrl) {
         await updatePerson({
           id: personId,

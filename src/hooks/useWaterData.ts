@@ -73,7 +73,7 @@ export const useWaterData = () => {
     }
   });
 
-  const handleFileUpload = async (file: File) => {
+  const uploadFile = async (file: File) => {
     try {
       return await uploadReceipt(file);
     } catch (error) {
@@ -91,6 +91,6 @@ export const useWaterData = () => {
     addPerson: addPersonMutation.mutate,
     updatePerson: updatePersonMutation.mutate,
     deletePerson: deletePersonMutation.mutate,
-    handleFileUpload
+    uploadFile
   };
 };
