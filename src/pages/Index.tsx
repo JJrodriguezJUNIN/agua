@@ -1,32 +1,40 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 import { Plus } from "lucide-react";
-import initialData from "../data/water.json";
-import { WaterConfig, Person } from "../types/water";
+import { Person } from "../types/water";
 import { AdminLogin } from "@/components/AdminLogin";
 import { WaterStats } from "@/components/WaterStats";
 import { UserCard } from "@/components/UserCard";
 import { AddUserDialog } from "@/components/AddUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { PaymentHistory } from "@/components/PaymentHistory";
+import { useWaterData } from "@/hooks/useWaterData";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 const Index = () => {
-  const [data, setData] = useState<WaterConfig>(initialData);
+  const {
+    config,
+    people,
+    isLoading,
+    updateConfig,
+    addPerson,
+    updatePerson,
+    deletePerson,
+    handleFileUpload
+  } = useWaterData();
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
   const [showPaymentHistoryDialog, setShowPaymentHistoryDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Person | null>(null);
-  const { toast } = useToast();
 
   const calculatePersonAmount = () => {
-    return data.people.length > 0
-      ? (data.bottlePrice * data.bottleCount) / data.people.length
+    return people?.length > 0
+      ? (config?.bottlePrice * config?.bottleCount) / people.length
       : 0;
   };
 
@@ -34,35 +42,29 @@ const Index = () => {
     return format(new Date(), "MMMM yyyy", { locale: es });
   };
 
-  const handlePayment = (personId: string) => {
+  const handlePayment = async (personId: string) => {
     const amount = calculatePersonAmount();
     const currentMonth = getCurrentMonth();
-    const payment = {
-      date: new Date().toISOString(),
-      amount,
-      receipt: data.people.find(p => p.id === personId)?.receipt,
-      month: currentMonth
-    };
-
-    setData((prev) => ({
-      ...prev,
-      people: prev.people.map((p) =>
-        p.id === personId
-          ? {
-              ...p,
-              hasPaid: true,
-              lastPaymentMonth: currentMonth,
-              pendingAmount: undefined,
-              paymentHistory: [...(p.paymentHistory || []), payment],
-            }
-          : p
-      ),
-    }));
+    const person = people?.find(p => p.id === personId);
     
-    toast({
-      title: "Pago registrado",
-      description: `El pago del mes de ${currentMonth} ha sido registrado exitosamente.`,
-    });
+    if (person) {
+      const payment = {
+        date: new Date().toISOString(),
+        amount,
+        receipt: person.receipt,
+        month: currentMonth
+      };
+
+      await updatePerson({
+        id: personId,
+        updates: {
+          hasPaid: true,
+          lastPaymentMonth: currentMonth,
+          pendingAmount: undefined,
+          paymentHistory: [...(person.paymentHistory || []), payment],
+        }
+      });
+    }
   };
 
   const handleFileUpload = async (
@@ -71,75 +73,19 @@ const Index = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      setData((prev) => ({
-        ...prev,
-        people: prev.people.map((p) =>
-          p.id === personId ? { ...p, receipt: URL.createObjectURL(file) } : p
-        ),
-      }));
-      toast({
-        title: "Comprobante subido",
-        description: "El comprobante se ha subido correctamente.",
-      });
+      const receiptUrl = await handleFileUpload(file);
+      if (receiptUrl) {
+        await updatePerson({
+          id: personId,
+          updates: { receipt: receiptUrl }
+        });
+      }
     }
   };
 
-  const updateBottlePrice = (price: number) => {
-    if (isAdmin) {
-      setData((prev) => ({ ...prev, bottlePrice: price }));
-    }
-  };
-
-  const updateBottleCount = (count: number) => {
-    if (isAdmin) {
-      setData((prev) => ({ ...prev, bottleCount: count }));
-    }
-  };
-
-  const handleAddUser = (newUser: Omit<Person, "id">) => {
-    if (isAdmin) {
-      const id = (data.people.length + 1).toString();
-      const currentMonth = getCurrentMonth();
-      setData((prev) => ({
-        ...prev,
-        people: [...prev.people, { 
-          ...newUser, 
-          id, 
-          pendingAmount: calculatePersonAmount(),
-          paymentHistory: [] 
-        }],
-      }));
-    }
-  };
-
-  const handleEditUser = (updatedUser: Person) => {
-    if (isAdmin) {
-      setData((prev) => ({
-        ...prev,
-        people: prev.people.map((p) =>
-          p.id === updatedUser.id ? updatedUser : p
-        ),
-      }));
-    }
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (isAdmin) {
-      setData((prev) => ({
-        ...prev,
-        people: prev.people.filter((p) => p.id !== userId),
-      }));
-      toast({
-        title: "Usuario eliminado",
-        description: "El usuario ha sido eliminado exitosamente.",
-      });
-    }
-  };
-
-  const handleShowHistory = (user: Person) => {
-    setSelectedUser(user);
-    setShowPaymentHistoryDialog(true);
-  };
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -152,7 +98,7 @@ const Index = () => {
       <AddUserDialog
         open={showAddUserDialog}
         onOpenChange={setShowAddUserDialog}
-        onAddUser={handleAddUser}
+        onAddUser={addPerson}
       />
 
       {selectedUser && (
@@ -160,7 +106,7 @@ const Index = () => {
           <EditUserDialog
             open={showEditUserDialog}
             onOpenChange={setShowEditUserDialog}
-            onEditUser={handleEditUser}
+            onEditUser={(user) => updatePerson({ id: user.id, updates: user })}
             user={selectedUser}
           />
           <PaymentHistory
@@ -193,10 +139,6 @@ const Index = () => {
                     setShowLoginDialog(true);
                   } else {
                     setIsAdmin(false);
-                    toast({
-                      title: "Sesión finalizada",
-                      description: "Has salido del modo administrador.",
-                    });
                   }
                 }}
               >
@@ -206,18 +148,20 @@ const Index = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <WaterStats
-            data={data}
-            isAdmin={isAdmin}
-            updateBottlePrice={updateBottlePrice}
-            updateBottleCount={updateBottleCount}
-            calculatePersonAmount={calculatePersonAmount}
-          />
+          {config && (
+            <WaterStats
+              data={config}
+              isAdmin={isAdmin}
+              updateBottlePrice={(price) => updateConfig({ bottlePrice: price })}
+              updateBottleCount={(count) => updateConfig({ bottleCount: count })}
+              calculatePersonAmount={calculatePersonAmount}
+            />
+          )}
         </CardContent>
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {data.people.map((person) => (
+        {people?.map((person) => (
           <UserCard
             key={person.id}
             person={person}
@@ -227,8 +171,11 @@ const Index = () => {
               setSelectedUser(user);
               setShowEditUserDialog(true);
             }}
-            onDelete={handleDeleteUser}
-            onShowHistory={handleShowHistory}
+            onDelete={deletePerson}
+            onShowHistory={(user) => {
+              setSelectedUser(user);
+              setShowPaymentHistoryDialog(true);
+            }}
             amount={calculatePersonAmount()}
             isAdmin={isAdmin}
           />
