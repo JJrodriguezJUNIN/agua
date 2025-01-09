@@ -10,22 +10,18 @@ import {
   deletePerson,
   uploadReceipt
 } from '../lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const useWaterData = () => {
   const queryClient = useQueryClient();
-  const { user, isAdmin } = useAuth();
 
   const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ['waterConfig'],
-    queryFn: getWaterConfig,
-    enabled: !!user
+    queryFn: getWaterConfig
   });
 
   const { data: people, isLoading: peopleLoading } = useQuery({
     queryKey: ['people'],
-    queryFn: getPeople,
-    enabled: !!user
+    queryFn: getPeople
   });
 
   const updateConfigMutation = useMutation({

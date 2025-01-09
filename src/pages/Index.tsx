@@ -1,19 +1,16 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { Person } from "../types/water";
-import { AdminLogin } from "@/components/AdminLogin";
 import { WaterStats } from "@/components/WaterStats";
-import { UserCard } from "@/components/UserCard";
 import { AddUserDialog } from "@/components/AddUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { PaymentHistory } from "@/components/PaymentHistory";
 import { useWaterData } from "@/hooks/useWaterData";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { useAuth } from "@/contexts/AuthContext";
+import { Person } from "../types/water";
 import { toast } from "sonner";
+import { WaterHeader } from "@/components/WaterHeader";
+import { UserList } from "@/components/UserList";
+import { CardContent } from "@/components/ui/card";
 
 const Index = () => {
   const {
@@ -24,11 +21,9 @@ const Index = () => {
     addPerson,
     updatePerson,
     deletePerson,
-    uploadFile
+    uploadFile,
   } = useWaterData();
 
-  const { isAdmin, user } = useAuth();
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
   const [showPaymentHistoryDialog, setShowPaymentHistoryDialog] = useState(false);
@@ -45,21 +40,16 @@ const Index = () => {
   };
 
   const handlePayment = async (personId: string) => {
-    if (!user) {
-      toast.error("Debes iniciar sesión para realizar esta acción");
-      return;
-    }
-
     const amount = calculatePersonAmount();
     const currentMonth = getCurrentMonth();
-    const person = people?.find(p => p.id === personId);
-    
+    const person = people?.find((p) => p.id === personId);
+
     if (person) {
       const payment = {
         date: new Date().toISOString(),
         amount,
         receipt: person.receipt,
-        month: currentMonth
+        month: currentMonth,
       };
 
       try {
@@ -70,7 +60,7 @@ const Index = () => {
             lastPaymentMonth: currentMonth,
             pendingAmount: undefined,
             paymentHistory: [...(person.paymentHistory || []), payment],
-          }
+          },
         });
       } catch (error) {
         toast.error("Error al procesar el pago");
@@ -83,11 +73,6 @@ const Index = () => {
     e: React.ChangeEvent<HTMLInputElement>,
     personId: string
   ) => {
-    if (!user) {
-      toast.error("Debes iniciar sesión para realizar esta acción");
-      return;
-    }
-
     const file = e.target.files?.[0];
     if (file) {
       try {
@@ -95,7 +80,7 @@ const Index = () => {
         if (receiptUrl) {
           await updatePerson({
             id: personId,
-            updates: { receipt: receiptUrl }
+            updates: { receipt: receiptUrl },
           });
         }
       } catch (error) {
@@ -107,25 +92,6 @@ const Index = () => {
 
   if (isLoading) {
     return <div>Cargando...</div>;
-  }
-
-  if (!user) {
-    return (
-      <div className="container mx-auto p-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Iniciar Sesión</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AdminLogin
-              showLoginDialog={true}
-              setShowLoginDialog={() => {}}
-              onLoginSuccess={() => {}}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    );
   }
 
   return (
@@ -153,57 +119,37 @@ const Index = () => {
         </>
       )}
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Pago de Agua Region Sanitaria III</span>
-            <div className="flex gap-2">
-              {isAdmin && (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAddUserDialog(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Usuario
-                </Button>
-              )}
-            </div>
-          </CardTitle>
-        </CardHeader>
+      <WaterHeader onAddUser={() => setShowAddUserDialog(true)} />
+
+      <div className="mb-6">
         <CardContent>
           {config && (
             <WaterStats
               data={config}
-              isAdmin={isAdmin}
+              isAdmin={true}
               updateBottlePrice={(price) => updateConfig({ bottlePrice: price })}
               updateBottleCount={(count) => updateConfig({ bottleCount: count })}
               calculatePersonAmount={calculatePersonAmount}
             />
           )}
         </CardContent>
-      </Card>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {people?.map((person) => (
-          <UserCard
-            key={person.id}
-            person={person}
-            onFileUpload={handleFileUpload}
-            onPayment={handlePayment}
-            onEdit={(user) => {
-              setSelectedUser(user);
-              setShowEditUserDialog(true);
-            }}
-            onDelete={deletePerson}
-            onShowHistory={(user) => {
-              setSelectedUser(user);
-              setShowPaymentHistoryDialog(true);
-            }}
-            amount={calculatePersonAmount()}
-            isAdmin={isAdmin}
-          />
-        ))}
       </div>
+
+      <UserList
+        people={people || []}
+        onFileUpload={handleFileUpload}
+        onPayment={handlePayment}
+        onEdit={(user) => {
+          setSelectedUser(user);
+          setShowEditUserDialog(true);
+        }}
+        onDelete={deletePerson}
+        onShowHistory={(user) => {
+          setSelectedUser(user);
+          setShowPaymentHistoryDialog(true);
+        }}
+        amount={calculatePersonAmount()}
+      />
     </div>
   );
 };
