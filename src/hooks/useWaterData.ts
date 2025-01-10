@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
 import { supabase } from '../integrations/supabase/client';
+import { Json } from '../integrations/supabase/types';
 
 const mapSupabasePersonToPerson = (person: SupabasePerson): Person => ({
   id: person.id,
