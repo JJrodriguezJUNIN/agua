@@ -1,7 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Person, WaterConfig } from '../types/water';
+import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
 import { supabase } from '../integrations/supabase/client';
+
+const mapSupabasePersonToPerson = (person: SupabasePerson): Person => ({
+  id: person.id,
+  name: person.name,
+  avatar: person.avatar,
+  hasPaid: person.has_paid,
+  receipt: person.receipt,
+  paymentHistory: person.payment_history as any[] || [],
+  lastPaymentMonth: person.last_payment_month,
+  pendingAmount: person.pending_amount,
+});
+
+const mapSupabaseConfigToConfig = (config: SupabaseWaterConfig): WaterConfig => ({
+  id: config.id,
+  bottlePrice: config.bottle_price,
+  bottleCount: config.bottle_count,
+});
 
 export const useWaterData = () => {
   const queryClient = useQueryClient();
@@ -15,7 +32,7 @@ export const useWaterData = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return mapSupabaseConfigToConfig(data);
     }
   });
 
@@ -27,14 +44,17 @@ export const useWaterData = () => {
         .select('*');
 
       if (error) throw error;
-      return data;
+      return data.map(mapSupabasePersonToPerson);
     }
   });
 
   const updateConfig = async (updates: Partial<WaterConfig>) => {
     const { error } = await supabase
       .from('water_config')
-      .update(updates)
+      .update({
+        bottle_price: updates.bottlePrice,
+        bottle_count: updates.bottleCount,
+      })
       .eq('id', 1);
 
     if (error) throw error;
@@ -45,7 +65,15 @@ export const useWaterData = () => {
   const addPerson = async (person: Omit<Person, 'id'>) => {
     const { error } = await supabase
       .from('people')
-      .insert([person]);
+      .insert([{
+        name: person.name,
+        avatar: person.avatar,
+        has_paid: person.hasPaid,
+        payment_history: person.paymentHistory,
+        receipt: person.receipt,
+        last_payment_month: person.lastPaymentMonth,
+        pending_amount: person.pendingAmount,
+      }]);
 
     if (error) throw error;
     queryClient.invalidateQueries({ queryKey: ['people'] });
@@ -55,7 +83,15 @@ export const useWaterData = () => {
   const updatePerson = async ({ id, updates }: { id: string; updates: Partial<Person> }) => {
     const { error } = await supabase
       .from('people')
-      .update(updates)
+      .update({
+        name: updates.name,
+        avatar: updates.avatar,
+        has_paid: updates.hasPaid,
+        payment_history: updates.paymentHistory,
+        receipt: updates.receipt,
+        last_payment_month: updates.lastPaymentMonth,
+        pending_amount: updates.pendingAmount,
+      })
       .eq('id', id);
 
     if (error) throw error;
