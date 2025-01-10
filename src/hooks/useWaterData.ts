@@ -9,7 +9,7 @@ const mapSupabasePersonToPerson = (person: SupabasePerson): Person => ({
   avatar: person.avatar,
   hasPaid: person.has_paid,
   receipt: person.receipt,
-  paymentHistory: person.payment_history as any[] || [],
+  paymentHistory: (person.payment_history || []) as any[],
   lastPaymentMonth: person.last_payment_month,
   pendingAmount: person.pending_amount,
 });
@@ -65,15 +65,15 @@ export const useWaterData = () => {
   const addPerson = async (person: Omit<Person, 'id'>) => {
     const { error } = await supabase
       .from('people')
-      .insert([{
+      .insert({
         name: person.name,
         avatar: person.avatar,
         has_paid: person.hasPaid,
-        payment_history: person.paymentHistory,
+        payment_history: person.paymentHistory as Json[],
         receipt: person.receipt,
         last_payment_month: person.lastPaymentMonth,
         pending_amount: person.pendingAmount,
-      }]);
+      });
 
     if (error) throw error;
     queryClient.invalidateQueries({ queryKey: ['people'] });
@@ -87,7 +87,7 @@ export const useWaterData = () => {
         name: updates.name,
         avatar: updates.avatar,
         has_paid: updates.hasPaid,
-        payment_history: updates.paymentHistory,
+        payment_history: updates.paymentHistory as Json[],
         receipt: updates.receipt,
         last_payment_month: updates.lastPaymentMonth,
         pending_amount: updates.pendingAmount,
