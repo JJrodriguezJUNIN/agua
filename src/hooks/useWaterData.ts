@@ -1,81 +1,96 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig } from '../types/water';
-import {
-  getWaterConfig,
-  updateWaterConfig,
-  getPeople,
-  addPerson,
-  updatePerson,
-  deletePerson,
-  uploadReceipt
-} from '../lib/supabase';
+import { supabase } from '../integrations/supabase/client';
 
 export const useWaterData = () => {
   const queryClient = useQueryClient();
 
   const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ['waterConfig'],
-    queryFn: getWaterConfig
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('water_config')
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
   });
 
   const { data: people, isLoading: peopleLoading } = useQuery({
     queryKey: ['people'],
-    queryFn: getPeople
-  });
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('people')
+        .select('*');
 
-  const updateConfigMutation = useMutation({
-    mutationFn: updateWaterConfig,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['waterConfig'] });
-      toast.success('Configuración actualizada');
-    },
-    onError: (error) => {
-      toast.error('Error al actualizar la configuración');
-      console.error(error);
+      if (error) throw error;
+      return data;
     }
   });
 
-  const addPersonMutation = useMutation({
-    mutationFn: addPerson,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['people'] });
-      toast.success('Usuario agregado exitosamente');
-    },
-    onError: (error) => {
-      toast.error('Error al agregar usuario');
-      console.error(error);
-    }
-  });
+  const updateConfig = async (updates: Partial<WaterConfig>) => {
+    const { error } = await supabase
+      .from('water_config')
+      .update(updates)
+      .eq('id', 1);
 
-  const updatePersonMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Person> }) =>
-      updatePerson(id, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['people'] });
-      toast.success('Usuario actualizado exitosamente');
-    },
-    onError: (error) => {
-      toast.error('Error al actualizar usuario');
-      console.error(error);
-    }
-  });
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ['waterConfig'] });
+    toast.success('Configuración actualizada');
+  };
 
-  const deletePersonMutation = useMutation({
-    mutationFn: deletePerson,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['people'] });
-      toast.success('Usuario eliminado exitosamente');
-    },
-    onError: (error) => {
-      toast.error('Error al eliminar usuario');
-      console.error(error);
-    }
-  });
+  const addPerson = async (person: Omit<Person, 'id'>) => {
+    const { error } = await supabase
+      .from('people')
+      .insert([person]);
+
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ['people'] });
+    toast.success('Usuario agregado exitosamente');
+  };
+
+  const updatePerson = async ({ id, updates }: { id: string; updates: Partial<Person> }) => {
+    const { error } = await supabase
+      .from('people')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ['people'] });
+    toast.success('Usuario actualizado exitosamente');
+  };
+
+  const deletePerson = async (id: string) => {
+    const { error } = await supabase
+      .from('people')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    queryClient.invalidateQueries({ queryKey: ['people'] });
+    toast.success('Usuario eliminado exitosamente');
+  };
 
   const uploadFile = async (file: File) => {
     try {
-      return await uploadReceipt(file);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `receipts/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('receipts')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
     } catch (error) {
       toast.error('Error al subir el comprobante');
       console.error(error);
@@ -87,10 +102,10 @@ export const useWaterData = () => {
     config,
     people,
     isLoading: configLoading || peopleLoading,
-    updateConfig: updateConfigMutation.mutate,
-    addPerson: addPersonMutation.mutate,
-    updatePerson: updatePersonMutation.mutate,
-    deletePerson: deletePersonMutation.mutate,
+    updateConfig,
+    addPerson,
+    updatePerson,
+    deletePerson,
     uploadFile
   };
 };
