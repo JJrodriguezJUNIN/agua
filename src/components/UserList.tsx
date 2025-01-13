@@ -9,6 +9,7 @@ interface UserListProps {
   onDelete: (id: string) => void;
   onShowHistory: (person: Person) => void;
   amount: number;
+  isAdmin: boolean;
 }
 
 export const UserList = ({
@@ -19,6 +20,7 @@ export const UserList = ({
   onDelete,
   onShowHistory,
   amount,
+  isAdmin,
 }: UserListProps) => {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -32,7 +34,7 @@ export const UserList = ({
           onDelete={onDelete}
           onShowHistory={onShowHistory}
           amount={amount}
-          isAdmin={true}
+          isAdmin={isAdmin}
         />
       ))}
     </div>

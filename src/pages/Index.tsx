@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Person } from "../types/water";
 import { toast } from "sonner";
-import { WaterHeader } from "@/components/WaterHeader";
 import { UserList } from "@/components/UserList";
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,7 @@ const Index = () => {
 
   const calculatePersonAmount = () => {
     return people?.length > 0
-      ? (config?.bottle_price * config?.bottle_count) / people.length
+      ? (config?.bottlePrice * config?.bottleCount) / people.length
       : 0;
   };
 
@@ -64,7 +63,7 @@ const Index = () => {
             hasPaid: true,
             lastPaymentMonth: currentMonth,
             pendingAmount: undefined,
-            paymentHistory: [...(person.payment_history || []), payment],
+            paymentHistory: [...(person.paymentHistory || []), payment],
           },
         });
       } catch (error) {
@@ -126,7 +125,7 @@ const Index = () => {
               <PaymentHistory
                 open={showPaymentHistoryDialog}
                 onOpenChange={setShowPaymentHistoryDialog}
-                payments={selectedUser.payment_history || []}
+                payments={selectedUser.paymentHistory || []}
                 userName={selectedUser.name}
               />
             </>
@@ -161,8 +160,8 @@ const Index = () => {
               <WaterStats
                 data={config}
                 isAdmin={true}
-                updateBottlePrice={(price) => updateConfig({ bottle_price: price })}
-                updateBottleCount={(count) => updateConfig({ bottle_count: count })}
+                updateBottlePrice={(price) => updateConfig({ bottlePrice: price })}
+                updateBottleCount={(count) => updateConfig({ bottleCount: count })}
                 calculatePersonAmount={calculatePersonAmount}
               />
             )}
