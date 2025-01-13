@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface AuthContextType {
   isAdmin: boolean;
@@ -13,13 +14,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAdmin(session?.user?.email === "juan@admin.com");
+    });
+
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user?.email === "juan@admin.com") {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+      async (_event, session) => {
+        setIsAdmin(session?.user?.email === "juan@admin.com");
       }
     );
 
@@ -37,14 +40,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         
         if (error) {
-          console.error("Error de autenticación:", error);
+          toast.error("Error de autenticación: " + error.message);
           throw error;
         }
         
         if (data.user?.email === "juan@admin.com") {
           setIsAdmin(true);
+          toast.success("Inicio de sesión exitoso");
         }
       } else {
+        toast.error("Credenciales inválidas");
         throw new Error("Credenciales inválidas");
       }
     } catch (error) {
@@ -55,9 +60,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // First clear the state
       setIsAdmin(false);
+      
+      // Then sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error("Error al cerrar sesión: " + error.message);
+        throw error;
+      }
+      
+      toast.success("Sesión cerrada exitosamente");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
       throw error;
