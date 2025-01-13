@@ -28,15 +28,25 @@ export const AdminLogin = ({
   const { signIn } = useAuth();
 
   const handleLogin = async () => {
-    try {
-      await signIn(username, password);
-      onLoginSuccess();
-      setShowLoginDialog(false);
-      toast({
-        title: "Acceso concedido",
-        description: "Has ingresado como administrador.",
-      });
-    } catch (error) {
+    // Check for specific admin credentials
+    if (username === "Juan" && password === "361045") {
+      try {
+        // Use the admin email for Supabase authentication
+        await signIn("juan@admin.com", "361045");
+        onLoginSuccess();
+        setShowLoginDialog(false);
+        toast({
+          title: "Acceso concedido",
+          description: "Has ingresado como administrador.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error de acceso",
+          description: "Error al iniciar sesión.",
+          variant: "destructive",
+        });
+      }
+    } else {
       toast({
         title: "Error de acceso",
         description: "Credenciales incorrectas.",
