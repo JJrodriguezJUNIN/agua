@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (username: string, password: string) => {
     // For the specific admin user, we'll use a predefined email
-    if (username === "juan" && password === "361045") {
+    if (username === "Juan" && password === "361045") {
       const { error } = await supabase.auth.signInWithPassword({
         email: "juan@admin.com",
         password: "361045",
