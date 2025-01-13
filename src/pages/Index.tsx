@@ -11,6 +11,9 @@ import { toast } from "sonner";
 import { WaterHeader } from "@/components/WaterHeader";
 import { UserList } from "@/components/UserList";
 import { CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AdminLogin } from "@/components/AdminLogin";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const {
@@ -27,11 +30,13 @@ const Index = () => {
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
   const [showPaymentHistoryDialog, setShowPaymentHistoryDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Person | null>(null);
+  const { isAdmin, signOut } = useAuth();
 
   const calculatePersonAmount = () => {
     return people?.length > 0
-      ? (config?.bottlePrice * config?.bottleCount) / people.length
+      ? (config?.bottle_price * config?.bottle_count) / people.length
       : 0;
   };
 
@@ -59,7 +64,7 @@ const Index = () => {
             hasPaid: true,
             lastPaymentMonth: currentMonth,
             pendingAmount: undefined,
-            paymentHistory: [...(person.paymentHistory || []), payment],
+            paymentHistory: [...(person.payment_history || []), payment],
           },
         });
       } catch (error) {
@@ -96,44 +101,74 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <AddUserDialog
-        open={showAddUserDialog}
-        onOpenChange={setShowAddUserDialog}
-        onAddUser={addPerson}
+      <AdminLogin
+        showLoginDialog={showLoginDialog}
+        setShowLoginDialog={setShowLoginDialog}
+        onLoginSuccess={() => {}}
       />
 
-      {selectedUser && (
+      {isAdmin && (
         <>
-          <EditUserDialog
-            open={showEditUserDialog}
-            onOpenChange={setShowEditUserDialog}
-            onEditUser={(user) => updatePerson({ id: user.id, updates: user })}
-            user={selectedUser}
+          <AddUserDialog
+            open={showAddUserDialog}
+            onOpenChange={setShowAddUserDialog}
+            onAddUser={addPerson}
           />
-          <PaymentHistory
-            open={showPaymentHistoryDialog}
-            onOpenChange={setShowPaymentHistoryDialog}
-            payments={selectedUser.paymentHistory || []}
-            userName={selectedUser.name}
-          />
+
+          {selectedUser && (
+            <>
+              <EditUserDialog
+                open={showEditUserDialog}
+                onOpenChange={setShowEditUserDialog}
+                onEditUser={(user) => updatePerson({ id: user.id, updates: user })}
+                user={selectedUser}
+              />
+              <PaymentHistory
+                open={showPaymentHistoryDialog}
+                onOpenChange={setShowPaymentHistoryDialog}
+                payments={selectedUser.payment_history || []}
+                userName={selectedUser.name}
+              />
+            </>
+          )}
         </>
       )}
 
-      <WaterHeader onAddUser={() => setShowAddUserDialog(true)} />
-
-      <div className="mb-6">
-        <CardContent>
-          {config && (
-            <WaterStats
-              data={config}
-              isAdmin={true}
-              updateBottlePrice={(price) => updateConfig({ bottlePrice: price })}
-              updateBottleCount={(count) => updateConfig({ bottleCount: count })}
-              calculatePersonAmount={calculatePersonAmount}
-            />
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Pago de Agua Region Sanitaria III</h1>
+        <div className="flex gap-2">
+          {isAdmin ? (
+            <>
+              <Button variant="outline" onClick={() => setShowAddUserDialog(true)}>
+                Agregar Usuario
+              </Button>
+              <Button variant="outline" onClick={() => signOut()}>
+                Cerrar Sesión
+              </Button>
+            </>
+          ) : (
+            <Button variant="outline" onClick={() => setShowLoginDialog(true)}>
+              Administrador
+            </Button>
           )}
-        </CardContent>
+        </div>
       </div>
+
+      {isAdmin && (
+        <div className="mb-6">
+          <CardContent>
+            {config && (
+              <WaterStats
+                data={config}
+                isAdmin={true}
+                updateBottlePrice={(price) => updateConfig({ bottle_price: price })}
+                updateBottleCount={(count) => updateConfig({ bottle_count: count })}
+                calculatePersonAmount={calculatePersonAmount}
+              />
+            )}
+          </CardContent>
+        </div>
+      )}
 
       <UserList
         people={people || []}
@@ -149,6 +184,7 @@ const Index = () => {
           setShowPaymentHistoryDialog(true);
         }}
         amount={calculatePersonAmount()}
+        isAdmin={isAdmin}
       />
     </div>
   );

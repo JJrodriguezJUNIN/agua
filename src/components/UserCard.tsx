@@ -27,13 +27,15 @@ export const UserCard = ({
   amount,
   isAdmin,
 }: UserCardProps) => {
-  const hasPendingPayment = !person.hasPaid && person.pendingAmount;
+  const hasPendingPayment = !person.has_paid && person.pending_amount;
 
   return (
-    <Card className={cn(
-      hasPendingPayment ? "bg-red-50" : "",
-      "transition-colors duration-200"
-    )}>
+    <Card
+      className={cn(
+        hasPendingPayment ? "bg-red-50" : "",
+        "transition-colors duration-200"
+      )}
+    >
       <CardContent className="pt-6">
         <div className="flex flex-col items-center gap-4">
           <Avatar className="h-20 w-20">
@@ -42,20 +44,20 @@ export const UserCard = ({
           </Avatar>
           <h3 className="text-lg font-semibold">{person.name}</h3>
           <div className="flex flex-col items-center gap-2">
-            <span className={person.hasPaid ? "text-green-500" : "text-red-500"}>
-              {person.hasPaid ? "Pagado" : "Pendiente"}
+            <span className={person.has_paid ? "text-green-500" : "text-red-500"}>
+              {person.has_paid ? "Pagado" : "Pendiente"}
             </span>
-            {person.lastPaymentMonth && (
+            {person.last_payment_month && (
               <span className="text-sm text-gray-600">
-                Último pago: {person.lastPaymentMonth}
+                Último pago: {person.last_payment_month}
               </span>
             )}
-            {person.pendingAmount && !person.hasPaid && (
+            {person.pending_amount && !person.has_paid && (
               <span className="text-sm text-red-600">
-                Monto pendiente: ${person.pendingAmount}
+                Monto pendiente: ${person.pending_amount}
               </span>
             )}
-            {!person.hasPaid && (
+            {!person.has_paid && (
               <>
                 <div className="flex items-center gap-2">
                   <Upload className="h-4 w-4" />
