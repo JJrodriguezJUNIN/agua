@@ -1,64 +1,75 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  isAdmin: boolean;
   signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsAdmin(session?.user?.email === "juan@admin.com");
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user?.email === "juan@admin.com") {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      }
+    );
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsAdmin(session?.user?.email === "juan@admin.com");
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (username: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: "juan@admin.com",
-        password: "361045",
-      });
-      if (error) throw error;
+      if (username.toLowerCase() === "juan" && password === "361045") {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: "juan@admin.com",
+          password: "361045",
+        });
+        
+        if (error) {
+          console.error("Error de autenticación:", error);
+          throw error;
+        }
+        
+        if (data.user?.email === "juan@admin.com") {
+          setIsAdmin(true);
+        }
+      } else {
+        throw new Error("Credenciales inválidas");
+      }
     } catch (error) {
-      console.error("Error signing in:", error);
+      console.error("Error al iniciar sesión:", error);
       throw error;
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setIsAdmin(false);
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, signIn, signOut, isAdmin }}>
+    <AuthContext.Provider value={{ isAdmin, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
