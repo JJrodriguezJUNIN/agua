@@ -30,6 +30,10 @@ export const UserCard = ({
 }: UserCardProps) => {
   const hasPendingPayment = !person.hasPaid && person.pendingAmount;
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await onFileUpload(e, person.id);
+  };
+
   return (
     <Card
       className={cn(
@@ -64,7 +68,7 @@ export const UserCard = ({
                   <Upload className="h-4 w-4" />
                   <Input
                     type="file"
-                    onChange={(e) => onFileUpload(e, person.id)}
+                    onChange={handleFileChange}
                     accept="image/*,.pdf"
                   />
                 </div>
@@ -93,31 +97,33 @@ export const UserCard = ({
                 </Button>
               </>
             )}
-            {isAdmin && (
-              <div className="flex gap-2 mt-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onEdit(person)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onDelete(person.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onShowHistory(person)}
-                >
-                  <History className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2 mt-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onShowHistory(person)}
+              >
+                <History className="h-4 w-4" />
+              </Button>
+              {isAdmin && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onEdit(person)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onDelete(person.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

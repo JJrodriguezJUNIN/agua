@@ -118,7 +118,6 @@ export const useWaterData = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
 
-      // Upload the file to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
         .from('receipts')
         .upload(fileName, file);
@@ -129,11 +128,11 @@ export const useWaterData = () => {
         throw uploadError;
       }
 
-      // Get the public URL of the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('receipts')
         .getPublicUrl(fileName);
 
+      toast.success('Comprobante subido exitosamente');
       return publicUrl;
     } catch (error) {
       console.error('Upload error:', error);

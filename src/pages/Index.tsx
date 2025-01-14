@@ -4,8 +4,6 @@ import { AddUserDialog } from "@/components/AddUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { PaymentHistory } from "@/components/PaymentHistory";
 import { useWaterData } from "@/hooks/useWaterData";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Person } from "../types/water";
 import { toast } from "sonner";
 import { UserList } from "@/components/UserList";
@@ -40,10 +38,6 @@ const Index = () => {
       : 0;
   };
 
-  const getCurrentMonth = () => {
-    return format(new Date(), "MMMM yyyy", { locale: es });
-  };
-
   const handlePayment = async (personId: string) => {
     try {
       await processPayment(personId);
@@ -66,7 +60,6 @@ const Index = () => {
             id: personId,
             updates: { receipt: receiptUrl },
           });
-          toast.success('Comprobante subido exitosamente');
         }
       } catch (error) {
         toast.error('Error al subir el archivo');
