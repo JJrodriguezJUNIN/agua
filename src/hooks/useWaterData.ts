@@ -132,7 +132,6 @@ export const useWaterData = () => {
         .from('receipts')
         .getPublicUrl(fileName);
 
-      toast.success('Comprobante subido exitosamente');
       return publicUrl;
     } catch (error) {
       console.error('Upload error:', error);
@@ -166,6 +165,7 @@ export const useWaterData = () => {
         lastPaymentMonth: currentMonth,
         pendingAmount: undefined,
         paymentHistory: [...(person.paymentHistory || []), payment],
+        receipt: undefined, // Limpiar el recibo después del pago
       },
     });
 

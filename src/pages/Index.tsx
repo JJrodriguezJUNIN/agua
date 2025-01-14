@@ -60,6 +60,7 @@ const Index = () => {
             id: personId,
             updates: { receipt: receiptUrl },
           });
+          toast.success('Comprobante subido exitosamente');
         }
       } catch (error) {
         toast.error('Error al subir el archivo');
