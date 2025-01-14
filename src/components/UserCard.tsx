@@ -1,10 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Pencil, Trash2, History } from "lucide-react";
+import { Upload, Pencil, Trash2, History, Eye } from "lucide-react";
 import { Person } from "../types/water";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 interface UserCardProps {
   person: Person;
@@ -67,6 +68,23 @@ export const UserCard = ({
                     accept="image/*,.pdf"
                   />
                 </div>
+                {person.receipt && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver comprobante
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <img
+                        src={person.receipt}
+                        alt="Comprobante"
+                        className="w-full h-auto"
+                      />
+                    </DialogContent>
+                  </Dialog>
+                )}
                 <Button
                   onClick={() => onPayment(person.id)}
                   disabled={!person.receipt}

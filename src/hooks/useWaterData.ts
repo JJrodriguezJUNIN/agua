@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
 import { supabase } from '../integrations/supabase/client';
 import { Json } from '../integrations/supabase/types';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const mapSupabasePersonToPerson = (person: SupabasePerson): Person => ({
   id: person.id,
@@ -140,6 +142,37 @@ export const useWaterData = () => {
     }
   };
 
+  const getCurrentMonth = () => {
+    return format(new Date(), "MMMM yyyy", { locale: es });
+  };
+
+  const processPayment = async (personId: string) => {
+    const person = people?.find(p => p.id === personId);
+    if (!person || !config) return;
+
+    const amount = (config.bottlePrice * config.bottleCount) / (people?.length || 1);
+    const currentMonth = getCurrentMonth();
+
+    const payment = {
+      date: new Date().toISOString(),
+      amount,
+      receipt: person.receipt,
+      month: currentMonth,
+    };
+
+    await updatePerson({
+      id: personId,
+      updates: {
+        hasPaid: true,
+        lastPaymentMonth: currentMonth,
+        pendingAmount: undefined,
+        paymentHistory: [...(person.paymentHistory || []), payment],
+      },
+    });
+
+    toast.success('Pago procesado exitosamente');
+  };
+
   return {
     config,
     people,
@@ -148,6 +181,7 @@ export const useWaterData = () => {
     addPerson,
     updatePerson,
     deletePerson,
-    uploadFile
+    uploadFile,
+    processPayment
   };
 };

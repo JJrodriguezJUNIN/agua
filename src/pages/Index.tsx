@@ -24,6 +24,7 @@ const Index = () => {
     updatePerson,
     deletePerson,
     uploadFile,
+    processPayment
   } = useWaterData();
 
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
@@ -44,32 +45,11 @@ const Index = () => {
   };
 
   const handlePayment = async (personId: string) => {
-    const amount = calculatePersonAmount();
-    const currentMonth = getCurrentMonth();
-    const person = people?.find((p) => p.id === personId);
-
-    if (person) {
-      const payment = {
-        date: new Date().toISOString(),
-        amount,
-        receipt: person.receipt,
-        month: currentMonth,
-      };
-
-      try {
-        await updatePerson({
-          id: personId,
-          updates: {
-            hasPaid: true,
-            lastPaymentMonth: currentMonth,
-            pendingAmount: undefined,
-            paymentHistory: [...(person.paymentHistory || []), payment],
-          },
-        });
-      } catch (error) {
-        toast.error("Error al procesar el pago");
-        console.error(error);
-      }
+    try {
+      await processPayment(personId);
+    } catch (error) {
+      toast.error('Error al procesar el pago');
+      console.error(error);
     }
   };
 
@@ -86,9 +66,10 @@ const Index = () => {
             id: personId,
             updates: { receipt: receiptUrl },
           });
+          toast.success('Comprobante subido exitosamente');
         }
       } catch (error) {
-        toast.error("Error al subir el archivo");
+        toast.error('Error al subir el archivo');
         console.error(error);
       }
     }
