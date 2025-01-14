@@ -20,11 +20,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setIsAdmin(session?.user?.email === "juan@admin.com");
-      }
-    );
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAdmin(session?.user?.email === "juan@admin.com");
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -33,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (username: string, password: string) => {
     try {
-      if (username.toLowerCase() === "juan" && password === "361045") {
+      if (username === "Juan" && password === "361045") {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: "juan@admin.com",
           password: "361045",
@@ -53,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error("Credenciales inválidas");
       }
     } catch (error) {
-      console.error("Error al iniciar sesión:", error);
+      console.error("Error de autenticación:", error);
       throw error;
     }
   };
