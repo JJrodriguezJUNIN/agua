@@ -115,28 +115,27 @@ export const useWaterData = () => {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
 
+      // Upload the file to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
         .from('receipts')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, file);
 
       if (uploadError) {
+        console.error('Error uploading:', uploadError);
         toast.error('Error al subir el comprobante');
         throw uploadError;
       }
 
+      // Get the public URL of the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('receipts')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       return publicUrl;
     } catch (error) {
+      console.error('Upload error:', error);
       toast.error('Error al subir el comprobante');
-      console.error(error);
       return null;
     }
   };
