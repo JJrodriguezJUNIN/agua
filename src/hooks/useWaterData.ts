@@ -163,6 +163,7 @@ export const useWaterData = () => {
         amount,
         receipt: receiptUrl,
         month: currentMonth,
+        bottleCount: config.bottleCount,
       };
 
       await updatePerson({
@@ -220,6 +221,36 @@ export const useWaterData = () => {
     }
   };
 
+  const deletePayment = async (personId: string, paymentMonth: string) => {
+    const person = people?.find(p => p.id === personId);
+    if (!person) return;
+
+    try {
+      const updatedPaymentHistory = person.paymentHistory.filter(
+        payment => payment.month !== paymentMonth
+      );
+
+      const currentMonth = getCurrentMonth();
+      const isCurrentMonthPayment = paymentMonth === currentMonth;
+
+      await updatePerson({
+        id: personId,
+        updates: {
+          paymentHistory: updatedPaymentHistory,
+          hasPaid: isCurrentMonthPayment ? false : person.hasPaid,
+          lastPaymentMonth: isCurrentMonthPayment ? undefined : person.lastPaymentMonth,
+          pendingAmount: isCurrentMonthPayment ? config?.bottlePrice * config?.bottleCount / (people?.length || 1) : person.pendingAmount,
+        },
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['people'] });
+      toast.success('Pago eliminado exitosamente');
+    } catch (error) {
+      console.error('Delete payment error:', error);
+      toast.error('Error al eliminar el pago');
+    }
+  };
+
   return {
     config,
     people,
@@ -229,6 +260,7 @@ export const useWaterData = () => {
     updatePerson,
     deletePerson,
     processPayment,
-    updateReceipt
+    updateReceipt,
+    deletePayment
   };
 };

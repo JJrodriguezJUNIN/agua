@@ -19,6 +19,7 @@ import { Person } from "../types/water";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useState } from "react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 
 interface AllPaymentsHistoryProps {
   open: boolean;
@@ -26,6 +27,7 @@ interface AllPaymentsHistoryProps {
   people: Person[];
   isAdmin: boolean;
   onUpdateReceipt: (personId: string, paymentMonth: string, newReceipt: File) => void;
+  onDeletePayment?: (personId: string, paymentMonth: string) => void;
 }
 
 export const AllPaymentsHistory = ({
@@ -34,6 +36,7 @@ export const AllPaymentsHistory = ({
   people,
   isAdmin,
   onUpdateReceipt,
+  onDeletePayment,
 }: AllPaymentsHistoryProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingPayment, setEditingPayment] = useState<{
@@ -68,6 +71,7 @@ export const AllPaymentsHistory = ({
                 <TableHead>Fecha</TableHead>
                 <TableHead>Monto</TableHead>
                 <TableHead>Mes</TableHead>
+                <TableHead>Bidones</TableHead>
                 <TableHead>Comprobante</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
@@ -84,6 +88,7 @@ export const AllPaymentsHistory = ({
                     </TableCell>
                     <TableCell>${payment.amount}</TableCell>
                     <TableCell>{payment.month}</TableCell>
+                    <TableCell>{payment.bottleCount || "N/A"}</TableCell>
                     <TableCell>
                       {payment.receipt && (
                         <a
@@ -97,49 +102,82 @@ export const AllPaymentsHistory = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      {(isAdmin || person.id === person.id) && (
-                        <div className="space-y-2">
-                          {editingPayment?.personId === person.id &&
-                          editingPayment?.month === payment.month ? (
-                            <>
-                              <Input
-                                type="file"
-                                onChange={handleFileChange}
-                                accept="image/*,.pdf"
-                              />
+                      <div className="space-y-2">
+                        {(isAdmin || person.id === person.id) && (
+                          <>
+                            {editingPayment?.personId === person.id &&
+                            editingPayment?.month === payment.month ? (
+                              <>
+                                <Input
+                                  type="file"
+                                  onChange={handleFileChange}
+                                  accept="image/*,.pdf"
+                                />
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={handleUpdateReceipt}
+                                    disabled={!selectedFile}
+                                  >
+                                    Guardar
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setEditingPayment(null)}
+                                  >
+                                    Cancelar
+                                  </Button>
+                                </div>
+                              </>
+                            ) : (
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
-                                  onClick={handleUpdateReceipt}
-                                  disabled={!selectedFile}
-                                >
-                                  Guardar
-                                </Button>
-                                <Button
-                                  size="sm"
                                   variant="outline"
-                                  onClick={() => setEditingPayment(null)}
+                                  onClick={() =>
+                                    setEditingPayment({
+                                      personId: person.id,
+                                      month: payment.month,
+                                    })
+                                  }
                                 >
-                                  Cancelar
+                                  Modificar comprobante
                                 </Button>
+                                {isAdmin && onDeletePayment && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                      >
+                                        Eliminar pago
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Esta acción eliminará el pago y marcará el mes como pendiente para el usuario.
+                                          Esta acción no se puede deshacer.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => onDeletePayment(person.id, payment.month)}
+                                        >
+                                          Eliminar
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
                               </div>
-                            </>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                setEditingPayment({
-                                  personId: person.id,
-                                  month: payment.month,
-                                })
-                              }
-                            >
-                              Modificar comprobante
-                            </Button>
-                          )}
-                        </div>
-                      )}
+                            )}
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

@@ -23,7 +23,8 @@ const Index = () => {
     updatePerson,
     deletePerson,
     processPayment,
-    updateReceipt
+    updateReceipt,
+    deletePayment
   } = useWaterData();
 
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
@@ -55,6 +56,15 @@ const Index = () => {
       toast.success('Comprobante actualizado exitosamente');
     } catch (error) {
       toast.error('Error al actualizar el comprobante');
+      console.error(error);
+    }
+  };
+
+  const handleDeletePayment = async (personId: string, paymentMonth: string) => {
+    try {
+      await deletePayment(personId, paymentMonth);
+    } catch (error) {
+      toast.error('Error al eliminar el pago');
       console.error(error);
     }
   };
@@ -104,6 +114,7 @@ const Index = () => {
         people={people || []}
         isAdmin={isAdmin}
         onUpdateReceipt={handleUpdateReceipt}
+        onDeletePayment={isAdmin ? handleDeletePayment : undefined}
       />
 
       <div className="flex justify-between items-center mb-6">
