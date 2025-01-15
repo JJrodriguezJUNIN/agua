@@ -6,11 +6,12 @@ import { Person } from "../types/water";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
 
 interface UserCardProps {
   person: Person;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, id: string) => void;
-  onPayment: (id: string) => void;
+  onPayment: (id: string, file: File | null) => void;
   onEdit: (person: Person) => void;
   onDelete: (id: string) => void;
   onShowHistory: (person: Person) => void;
@@ -28,10 +29,19 @@ export const UserCard = ({
   amount,
   isAdmin,
 }: UserCardProps) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const hasPendingPayment = !person.hasPaid && person.pendingAmount;
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    await onFileUpload(e, person.id);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedFile(file);
+  };
+
+  const handlePayment = () => {
+    if (selectedFile) {
+      onPayment(person.id, selectedFile);
+      setSelectedFile(null);
+    }
   };
 
   return (
@@ -90,8 +100,8 @@ export const UserCard = ({
                   </Dialog>
                 )}
                 <Button
-                  onClick={() => onPayment(person.id)}
-                  disabled={!person.receipt}
+                  onClick={handlePayment}
+                  disabled={!selectedFile}
                 >
                   Pagar ${amount}
                 </Button>

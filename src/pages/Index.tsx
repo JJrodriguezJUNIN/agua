@@ -21,7 +21,6 @@ const Index = () => {
     addPerson,
     updatePerson,
     deletePerson,
-    uploadFile,
     processPayment
   } = useWaterData();
 
@@ -38,34 +37,12 @@ const Index = () => {
       : 0;
   };
 
-  const handlePayment = async (personId: string) => {
+  const handlePayment = async (personId: string, file: File | null) => {
     try {
-      await processPayment(personId);
+      await processPayment(personId, file);
     } catch (error) {
       toast.error('Error al procesar el pago');
       console.error(error);
-    }
-  };
-
-  const handleFileUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    personId: string
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const receiptUrl = await uploadFile(file);
-        if (receiptUrl) {
-          await updatePerson({
-            id: personId,
-            updates: { receipt: receiptUrl },
-          });
-          toast.success('Comprobante subido exitosamente');
-        }
-      } catch (error) {
-        toast.error('Error al subir el archivo');
-        console.error(error);
-      }
     }
   };
 
@@ -146,7 +123,7 @@ const Index = () => {
 
       <UserList
         people={people || []}
-        onFileUpload={handleFileUpload}
+        onFileUpload={() => {}}
         onPayment={handlePayment}
         onEdit={(user) => {
           setSelectedUser(user);

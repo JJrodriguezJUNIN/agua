@@ -116,7 +116,7 @@ export const useWaterData = () => {
   const uploadFile = async (file: File) => {
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError, data } = await supabase.storage
         .from('receipts')
@@ -144,32 +144,44 @@ export const useWaterData = () => {
     return format(new Date(), "MMMM yyyy", { locale: es });
   };
 
-  const processPayment = async (personId: string) => {
+  const processPayment = async (personId: string, file: File | null) => {
     const person = people?.find(p => p.id === personId);
-    if (!person || !config) return;
+    if (!person || !config || !file) return;
 
-    const amount = (config.bottlePrice * config.bottleCount) / (people?.length || 1);
-    const currentMonth = getCurrentMonth();
+    try {
+      // First upload the file
+      const receiptUrl = await uploadFile(file);
+      if (!receiptUrl) {
+        toast.error('Error al subir el comprobante');
+        return;
+      }
 
-    const payment = {
-      date: new Date().toISOString(),
-      amount,
-      receipt: person.receipt,
-      month: currentMonth,
-    };
+      const amount = (config.bottlePrice * config.bottleCount) / (people?.length || 1);
+      const currentMonth = getCurrentMonth();
 
-    await updatePerson({
-      id: personId,
-      updates: {
-        hasPaid: true,
-        lastPaymentMonth: currentMonth,
-        pendingAmount: undefined,
-        paymentHistory: [...(person.paymentHistory || []), payment],
-        receipt: undefined, // Limpiar el recibo después del pago
-      },
-    });
+      const payment = {
+        date: new Date().toISOString(),
+        amount,
+        receipt: receiptUrl,
+        month: currentMonth,
+      };
 
-    toast.success('Pago procesado exitosamente');
+      await updatePerson({
+        id: personId,
+        updates: {
+          hasPaid: true,
+          lastPaymentMonth: currentMonth,
+          pendingAmount: undefined,
+          paymentHistory: [...(person.paymentHistory || []), payment],
+          receipt: receiptUrl,
+        },
+      });
+
+      toast.success('Pago procesado exitosamente');
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Error al procesar el pago');
+    }
   };
 
   return {
@@ -180,7 +192,6 @@ export const useWaterData = () => {
     addPerson,
     updatePerson,
     deletePerson,
-    uploadFile,
     processPayment
   };
 };

@@ -4,7 +4,7 @@ import { Person } from "../types/water";
 interface UserListProps {
   people: Person[];
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, id: string) => void;
-  onPayment: (id: string) => void;
+  onPayment: (id: string, file: File | null) => void;
   onEdit: (person: Person) => void;
   onDelete: (id: string) => void;
   onShowHistory: (person: Person) => void;
