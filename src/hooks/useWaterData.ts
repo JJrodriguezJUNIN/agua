@@ -155,7 +155,7 @@ export const useWaterData = () => {
         return;
       }
 
-      const amount = (config.bottlePrice * config.bottleCount) / (people?.length || 1);
+      const amount = Math.round((config.bottlePrice * config.bottleCount) / (people?.length || 1));
       const currentMonth = getCurrentMonth();
 
       const payment = {
@@ -181,6 +181,40 @@ export const useWaterData = () => {
     } catch (error) {
       console.error('Payment error:', error);
       toast.error('Error al procesar el pago');
+    }
+  };
+
+  const deletePayment = async (personId: string, paymentMonth: string) => {
+    const person = people?.find(p => p.id === personId);
+    if (!person) return;
+
+    try {
+      const updatedPaymentHistory = person.paymentHistory.filter(
+        payment => payment.month !== paymentMonth
+      );
+
+      const currentMonth = getCurrentMonth();
+      const isCurrentMonthPayment = paymentMonth === currentMonth;
+
+      const pendingAmount = isCurrentMonthPayment 
+        ? Math.round(config?.bottlePrice * config?.bottleCount / (people?.length || 1))
+        : person.pendingAmount;
+
+      await updatePerson({
+        id: personId,
+        updates: {
+          paymentHistory: updatedPaymentHistory,
+          hasPaid: isCurrentMonthPayment ? false : person.hasPaid,
+          lastPaymentMonth: isCurrentMonthPayment ? undefined : person.lastPaymentMonth,
+          pendingAmount,
+        },
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['people'] });
+      toast.success('Pago eliminado exitosamente');
+    } catch (error) {
+      console.error('Delete payment error:', error);
+      toast.error('Error al eliminar el pago');
     }
   };
 
@@ -218,36 +252,6 @@ export const useWaterData = () => {
     } catch (error) {
       console.error('Update receipt error:', error);
       toast.error('Error al actualizar el comprobante');
-    }
-  };
-
-  const deletePayment = async (personId: string, paymentMonth: string) => {
-    const person = people?.find(p => p.id === personId);
-    if (!person) return;
-
-    try {
-      const updatedPaymentHistory = person.paymentHistory.filter(
-        payment => payment.month !== paymentMonth
-      );
-
-      const currentMonth = getCurrentMonth();
-      const isCurrentMonthPayment = paymentMonth === currentMonth;
-
-      await updatePerson({
-        id: personId,
-        updates: {
-          paymentHistory: updatedPaymentHistory,
-          hasPaid: isCurrentMonthPayment ? false : person.hasPaid,
-          lastPaymentMonth: isCurrentMonthPayment ? undefined : person.lastPaymentMonth,
-          pendingAmount: isCurrentMonthPayment ? config?.bottlePrice * config?.bottleCount / (people?.length || 1) : person.pendingAmount,
-        },
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['people'] });
-      toast.success('Pago eliminado exitosamente');
-    } catch (error) {
-      console.error('Delete payment error:', error);
-      toast.error('Error al eliminar el pago');
     }
   };
 
