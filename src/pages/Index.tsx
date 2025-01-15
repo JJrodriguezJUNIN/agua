@@ -23,6 +23,7 @@ const Index = () => {
     updatePerson,
     deletePerson,
     processPayment,
+    processCashPayment,
     updateReceipt,
     deletePayment
   } = useWaterData();
@@ -37,7 +38,7 @@ const Index = () => {
 
   const calculatePersonAmount = () => {
     return people?.length > 0
-      ? (config?.bottlePrice * config?.bottleCount) / people.length
+      ? Math.round((config?.bottlePrice * config?.bottleCount) / people.length)
       : 0;
   };
 
@@ -65,6 +66,15 @@ const Index = () => {
       await deletePayment(personId, paymentMonth);
     } catch (error) {
       toast.error('Error al eliminar el pago');
+      console.error(error);
+    }
+  };
+
+  const handleCashPayment = async (personId: string, amount: number) => {
+    try {
+      await processCashPayment(personId, amount);
+    } catch (error) {
+      toast.error('Error al procesar el pago en efectivo');
       console.error(error);
     }
   };
@@ -115,6 +125,7 @@ const Index = () => {
         isAdmin={isAdmin}
         onUpdateReceipt={handleUpdateReceipt}
         onDeletePayment={isAdmin ? handleDeletePayment : undefined}
+        onCashPayment={isAdmin ? handleCashPayment : undefined}
       />
 
       <div className="flex justify-between items-center mb-6">

@@ -184,6 +184,37 @@ export const useWaterData = () => {
     }
   };
 
+  const processCashPayment = async (personId: string, amount: number) => {
+    const person = people?.find(p => p.id === personId);
+    if (!person || !config) return;
+
+    try {
+      const currentMonth = getCurrentMonth();
+
+      const payment = {
+        date: new Date().toISOString(),
+        amount: Math.round(amount),
+        month: currentMonth,
+        bottleCount: config.bottleCount,
+      };
+
+      await updatePerson({
+        id: personId,
+        updates: {
+          hasPaid: true,
+          lastPaymentMonth: currentMonth,
+          pendingAmount: undefined,
+          paymentHistory: [...(person.paymentHistory || []), payment],
+        },
+      });
+
+      toast.success('Pago en efectivo registrado exitosamente');
+    } catch (error) {
+      console.error('Cash payment error:', error);
+      toast.error('Error al registrar el pago en efectivo');
+    }
+  };
+
   const deletePayment = async (personId: string, paymentMonth: string) => {
     const person = people?.find(p => p.id === personId);
     if (!person) return;
@@ -264,6 +295,7 @@ export const useWaterData = () => {
     updatePerson,
     deletePerson,
     processPayment,
+    processCashPayment,
     updateReceipt,
     deletePayment
   };
