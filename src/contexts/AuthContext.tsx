@@ -15,12 +15,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error checking session:", error);
+        return;
+      }
       setIsAdmin(session?.user?.email === "juan@admin.com");
-    });
+    };
+
+    checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setIsAdmin(session?.user?.email === "juan@admin.com");
     });
 
@@ -38,6 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         
         if (error) {
+          console.error("Authentication error:", error);
           toast.error("Error de autenticación: " + error.message);
           throw error;
         }
@@ -58,12 +66,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // First clear the state
       setIsAdmin(false);
-      
-      // Then sign out from Supabase
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
+        console.error("Sign out error:", error);
         toast.error("Error al cerrar sesión: " + error.message);
         throw error;
       }
