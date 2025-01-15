@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Pencil, Trash2, History, Eye } from "lucide-react";
+import { Upload, Pencil, Trash2, Eye } from "lucide-react";
 import { Person } from "../types/water";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,6 @@ export const UserCard = ({
   onPayment,
   onEdit,
   onDelete,
-  onShowHistory,
   amount,
   isAdmin,
 }: UserCardProps) => {
@@ -47,7 +46,7 @@ export const UserCard = ({
   return (
     <Card
       className={cn(
-        hasPendingPayment ? "bg-red-50" : "",
+        hasPendingPayment ? "bg-red-50" : "bg-green-50",
         "transition-colors duration-200"
       )}
     >
@@ -59,8 +58,13 @@ export const UserCard = ({
           </Avatar>
           <h3 className="text-lg font-semibold">{person.name}</h3>
           <div className="flex flex-col items-center gap-2">
-            <span className={person.hasPaid ? "text-green-500" : "text-red-500"}>
-              {person.hasPaid ? "Pagado" : "Pendiente"}
+            <span 
+              className={cn(
+                "text-sm font-medium px-3 py-1 rounded-full",
+                person.hasPaid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+              )}
+            >
+              {person.hasPaid ? `Pagado - ${person.lastPaymentMonth}` : "Pendiente"}
             </span>
             {person.lastPaymentMonth && (
               <span className="text-sm text-gray-600">
@@ -68,9 +72,14 @@ export const UserCard = ({
               </span>
             )}
             {person.pendingAmount && !person.hasPaid && (
-              <span className="text-sm text-red-600">
-                Monto pendiente: ${person.pendingAmount}
-              </span>
+              <div className="text-center">
+                <span className="text-sm text-red-600 font-semibold block">
+                  Monto pendiente: ${person.pendingAmount}
+                </span>
+                <span className="text-xs text-gray-500">
+                  Acumulado de meses anteriores
+                </span>
+              </div>
             )}
             {!person.hasPaid && (
               <>
@@ -102,19 +111,13 @@ export const UserCard = ({
                 <Button
                   onClick={handlePayment}
                   disabled={!selectedFile}
+                  className="w-full"
                 >
                   Pagar ${amount}
                 </Button>
               </>
             )}
             <div className="flex gap-2 mt-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onShowHistory(person)}
-              >
-                <History className="h-4 w-4" />
-              </Button>
               {isAdmin && (
                 <>
                   <Button

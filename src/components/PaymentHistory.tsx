@@ -30,8 +30,9 @@ export const PaymentHistory = ({
         </DialogHeader>
         <div className="mb-4 p-4 bg-yellow-50 rounded-md">
           <p className="text-sm text-yellow-800">
-            💡 Guía: Este historial muestra todos los pagos realizados. Los pagos se registran mensualmente.
-            Cada registro incluye el monto pagado, la fecha y el mes correspondiente.
+            💡 Guía: Este historial muestra todos los pagos realizados mensualmente.
+            Cada registro incluye el monto pagado, la fecha, el mes correspondiente
+            y la cantidad de bidones utilizados.
           </p>
         </div>
         <ScrollArea className="h-[300px] w-full rounded-md border p-4">
@@ -42,29 +43,36 @@ export const PaymentHistory = ({
               {payments.map((payment, index) => (
                 <div
                   key={index}
-                  className="flex justify-between items-center border-b pb-2"
+                  className="flex flex-col border-b pb-2"
                 >
-                  <div>
-                    <p className="font-medium">
-                      ${payment.amount}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {format(new Date(payment.date), "d 'de' MMMM 'de' yyyy", { locale: es })}
-                    </p>
-                    <p className="text-sm text-blue-600">
-                      Mes correspondiente: {payment.month}
-                    </p>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">
+                        ${payment.amount}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {format(new Date(payment.date), "d 'de' MMMM 'de' yyyy", { locale: es })}
+                      </p>
+                      <p className="text-sm text-blue-600">
+                        Mes: {payment.month}
+                      </p>
+                      {payment.bottleCount && (
+                        <p className="text-sm text-gray-600">
+                          Bidones utilizados: {payment.bottleCount}
+                        </p>
+                      )}
+                    </div>
+                    {payment.receipt && (
+                      <a
+                        href={payment.receipt}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        Ver comprobante
+                      </a>
+                    )}
                   </div>
-                  {payment.receipt && (
-                    <a
-                      href={payment.receipt}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      Ver comprobante
-                    </a>
-                  )}
                 </div>
               ))}
             </div>
