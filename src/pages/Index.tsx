@@ -3,6 +3,7 @@ import { WaterStats } from "@/components/WaterStats";
 import { AddUserDialog } from "@/components/AddUserDialog";
 import { EditUserDialog } from "@/components/EditUserDialog";
 import { PaymentHistory } from "@/components/PaymentHistory";
+import { AllPaymentsHistory } from "@/components/AllPaymentsHistory";
 import { useWaterData } from "@/hooks/useWaterData";
 import { Person } from "../types/water";
 import { toast } from "sonner";
@@ -21,12 +22,14 @@ const Index = () => {
     addPerson,
     updatePerson,
     deletePerson,
-    processPayment
+    processPayment,
+    updateReceipt
   } = useWaterData();
 
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
   const [showPaymentHistoryDialog, setShowPaymentHistoryDialog] = useState(false);
+  const [showAllPaymentsDialog, setShowAllPaymentsDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Person | null>(null);
   const { isAdmin, signOut } = useAuth();
@@ -42,6 +45,16 @@ const Index = () => {
       await processPayment(personId, file);
     } catch (error) {
       toast.error('Error al procesar el pago');
+      console.error(error);
+    }
+  };
+
+  const handleUpdateReceipt = async (personId: string, paymentMonth: string, newReceipt: File) => {
+    try {
+      await updateReceipt(personId, paymentMonth, newReceipt);
+      toast.success('Comprobante actualizado exitosamente');
+    } catch (error) {
+      toast.error('Error al actualizar el comprobante');
       console.error(error);
     }
   };
@@ -85,9 +98,20 @@ const Index = () => {
         </>
       )}
 
+      <AllPaymentsHistory
+        open={showAllPaymentsDialog}
+        onOpenChange={setShowAllPaymentsDialog}
+        people={people || []}
+        isAdmin={isAdmin}
+        onUpdateReceipt={handleUpdateReceipt}
+      />
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Pago de Agua Region Sanitaria III</h1>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowAllPaymentsDialog(true)}>
+            Ver Historial de Pagos
+          </Button>
           {isAdmin ? (
             <>
               <Button variant="outline" onClick={() => setShowAddUserDialog(true)}>

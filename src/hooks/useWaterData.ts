@@ -149,7 +149,6 @@ export const useWaterData = () => {
     if (!person || !config || !file) return;
 
     try {
-      // First upload the file
       const receiptUrl = await uploadFile(file);
       if (!receiptUrl) {
         toast.error('Error al subir el comprobante');
@@ -184,6 +183,43 @@ export const useWaterData = () => {
     }
   };
 
+  const updateReceipt = async (personId: string, paymentMonth: string, newReceipt: File) => {
+    const person = people?.find(p => p.id === personId);
+    if (!person) return;
+
+    try {
+      const receiptUrl = await uploadFile(newReceipt);
+      if (!receiptUrl) {
+        toast.error('Error al subir el nuevo comprobante');
+        return;
+      }
+
+      const updatedPaymentHistory = person.paymentHistory.map(payment => {
+        if (payment.month === paymentMonth) {
+          return {
+            ...payment,
+            receipt: receiptUrl,
+          };
+        }
+        return payment;
+      });
+
+      await updatePerson({
+        id: personId,
+        updates: {
+          paymentHistory: updatedPaymentHistory,
+          receipt: receiptUrl,
+        },
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['people'] });
+      toast.success('Comprobante actualizado exitosamente');
+    } catch (error) {
+      console.error('Update receipt error:', error);
+      toast.error('Error al actualizar el comprobante');
+    }
+  };
+
   return {
     config,
     people,
@@ -192,6 +228,7 @@ export const useWaterData = () => {
     addPerson,
     updatePerson,
     deletePerson,
-    processPayment
+    processPayment,
+    updateReceipt
   };
 };
