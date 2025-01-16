@@ -169,7 +169,7 @@ const Index = () => {
 
       <MonthTransition
         isAdmin={isAdmin}
-        currentMonth={config?.currentMonth || format(new Date(), 'MMMM yyyy', { locale: es })}
+        currentMonth={config?.currentMonth || format(new Date(), 'MMMM yyyy', { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
         isMonthActive={config?.isMonthActive ?? true}
         totalAmount={totalMonthlyAmount}
         bottleCount={config?.bottleCount || 0}

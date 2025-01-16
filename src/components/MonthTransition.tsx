@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, DollarSign, Droplet } from "lucide-react";
 
 interface MonthTransitionProps {
@@ -21,47 +21,37 @@ export const MonthTransition = ({
 }: MonthTransitionProps) => {
   return (
     <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-6 w-6" />
-          Resumen del Mes: {currentMonth}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <p className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Estado del Mes
-            </p>
-            <p className={`font-medium ${isMonthActive ? 'text-green-600' : 'text-red-600'}`}>
-              {isMonthActive ? 'Activo' : 'Cerrado'}
-            </p>
+      <CardContent className="py-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-gray-500" />
+              <span className="font-medium">Mes: {currentMonth}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-gray-500" />
+              <span className="font-medium">${totalAmount}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Droplet className="h-5 w-5 text-gray-500" />
+              <span className="font-medium">{bottleCount} bidones</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`font-medium ${isMonthActive ? 'text-green-600' : 'text-red-600'}`}>
+                {isMonthActive ? 'Activo' : 'Cerrado'}
+              </span>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              Total a Pagar
-            </p>
-            <p className="font-medium">${totalAmount}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Droplet className="h-4 w-4" />
-              Bidones Consumidos
-            </p>
-            <p className="font-medium">{bottleCount}</p>
-          </div>
+          {isAdmin && isMonthActive && (
+            <Button 
+              onClick={onStartNewMonth}
+              variant="outline"
+              className="ml-auto"
+            >
+              Iniciar Nuevo Mes
+            </Button>
+          )}
         </div>
-        {isAdmin && isMonthActive && (
-          <Button 
-            onClick={onStartNewMonth}
-            className="mt-4"
-            variant="outline"
-          >
-            Iniciar Nuevo Mes
-          </Button>
-        )}
       </CardContent>
     </Card>
   );
