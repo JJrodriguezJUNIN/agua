@@ -169,8 +169,8 @@ const Index = () => {
 
       <MonthTransition
         isAdmin={isAdmin}
-        currentMonth={config?.current_month || format(new Date(), 'MMMM yyyy', { locale: es })}
-        isMonthActive={config?.is_month_active ?? true}
+        currentMonth={config?.currentMonth || format(new Date(), 'MMMM yyyy', { locale: es })}
+        isMonthActive={config?.isMonthActive ?? true}
         totalAmount={totalMonthlyAmount}
         bottleCount={config?.bottleCount || 0}
         onStartNewMonth={handleStartNewMonth}
