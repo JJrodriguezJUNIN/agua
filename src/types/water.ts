@@ -6,6 +6,7 @@ export interface Payment {
   amount: number;
   receipt?: string;
   month: string;
+  bottleCount?: number;
 }
 
 export interface Person {
@@ -23,6 +24,8 @@ export interface WaterConfig {
   id: number;
   bottlePrice: number;
   bottleCount: number;
+  currentMonth?: string;
+  isMonthActive?: boolean;
 }
 
 // Supabase interfaces that match the database schema
@@ -41,4 +44,6 @@ export interface SupabaseWaterConfig {
   id: number;
   bottle_price: number;
   bottle_count: number;
+  current_month?: string;
+  is_month_active?: boolean;
 }

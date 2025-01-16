@@ -12,6 +12,9 @@ import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AdminLogin } from "@/components/AdminLogin";
 import { useAuth } from "@/contexts/AuthContext";
+import { MonthTransition } from "@/components/MonthTransition";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const Index = () => {
   const {
@@ -25,7 +28,8 @@ const Index = () => {
     processPayment,
     processCashPayment,
     updateReceipt,
-    deletePayment
+    deletePayment,
+    startNewMonth
   } = useWaterData();
 
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
@@ -79,9 +83,21 @@ const Index = () => {
     }
   };
 
+  const handleStartNewMonth = async () => {
+    try {
+      await startNewMonth();
+      toast.success('Nuevo mes iniciado exitosamente');
+    } catch (error) {
+      toast.error('Error al iniciar el nuevo mes');
+      console.error(error);
+    }
+  };
+
   if (isLoading) {
     return <div>Cargando...</div>;
   }
+
+  const totalMonthlyAmount = config?.bottlePrice * config?.bottleCount || 0;
 
   return (
     <div className="container mx-auto p-4">
@@ -150,6 +166,15 @@ const Index = () => {
           )}
         </div>
       </div>
+
+      <MonthTransition
+        isAdmin={isAdmin}
+        currentMonth={config?.current_month || format(new Date(), 'MMMM yyyy', { locale: es })}
+        isMonthActive={config?.is_month_active ?? true}
+        totalAmount={totalMonthlyAmount}
+        bottleCount={config?.bottleCount || 0}
+        onStartNewMonth={handleStartNewMonth}
+      />
 
       {isAdmin && (
         <div className="mb-6">

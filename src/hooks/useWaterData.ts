@@ -21,6 +21,8 @@ const mapSupabaseConfigToConfig = (config: SupabaseWaterConfig): WaterConfig => 
   id: config.id,
   bottlePrice: config.bottle_price,
   bottleCount: config.bottle_count,
+  currentMonth: config.current_month,
+  isMonthActive: config.is_month_active,
 });
 
 export const useWaterData = () => {
@@ -57,6 +59,8 @@ export const useWaterData = () => {
       .update({
         bottle_price: updates.bottlePrice,
         bottle_count: updates.bottleCount,
+        current_month: updates.currentMonth,
+        is_month_active: updates.isMonthActive,
       })
       .eq('id', 1);
 
@@ -156,7 +160,7 @@ export const useWaterData = () => {
       }
 
       const amount = Math.round((config.bottlePrice * config.bottleCount) / (people?.length || 1));
-      const currentMonth = getCurrentMonth();
+      const currentMonth = config.currentMonth || getCurrentMonth();
 
       const payment = {
         date: new Date().toISOString(),
@@ -189,7 +193,7 @@ export const useWaterData = () => {
     if (!person || !config) return;
 
     try {
-      const currentMonth = getCurrentMonth();
+      const currentMonth = config.currentMonth || getCurrentMonth();
 
       const payment = {
         date: new Date().toISOString(),
@@ -213,6 +217,35 @@ export const useWaterData = () => {
       console.error('Cash payment error:', error);
       toast.error('Error al registrar el pago en efectivo');
     }
+  };
+
+  const startNewMonth = async () => {
+    if (!config) return;
+    
+    const nextMonth = getCurrentMonth();
+    
+    // Update water_config with new month
+    await updateConfig({
+      ...config,
+      currentMonth: nextMonth,
+      isMonthActive: true,
+    });
+
+    // Reset all users' payment status
+    for (const person of people || []) {
+      const pendingAmount = person.hasPaid ? 0 : (person.pendingAmount || 0) + Math.round((config.bottlePrice * config.bottleCount) / (people?.length || 1));
+      
+      await updatePerson({
+        id: person.id,
+        updates: {
+          hasPaid: false,
+          pendingAmount,
+        },
+      });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['people'] });
+    toast.success('Nuevo mes iniciado exitosamente');
   };
 
   const deletePayment = async (personId: string, paymentMonth: string) => {
@@ -297,6 +330,7 @@ export const useWaterData = () => {
     processPayment,
     processCashPayment,
     updateReceipt,
-    deletePayment
+    deletePayment,
+    startNewMonth
   };
 };
