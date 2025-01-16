@@ -93,6 +93,13 @@ const Index = () => {
     }
   };
 
+  const formatCurrentMonth = () => {
+    const date = new Date();
+    const month = format(date, 'MMMM', { locale: es });
+    const year = format(date, 'yyyy');
+    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+  };
+
   if (isLoading) {
     return <div>Cargando...</div>;
   }
@@ -169,7 +176,7 @@ const Index = () => {
 
       <MonthTransition
         isAdmin={isAdmin}
-        currentMonth={config?.currentMonth || format(new Date(), 'MMMM yyyy', { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
+        currentMonth={config?.currentMonth || formatCurrentMonth()}
         isMonthActive={config?.isMonthActive ?? true}
         totalAmount={totalMonthlyAmount}
         bottleCount={config?.bottleCount || 0}
