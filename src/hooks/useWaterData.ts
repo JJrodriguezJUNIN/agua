@@ -145,9 +145,7 @@ export const useWaterData = () => {
   };
 
   const getCurrentMonth = () => {
-    const month = format(new Date(), "MMMM", { locale: es });
-    const year = format(new Date(), "yyyy");
-    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+    return format(new Date(), "MMMM 'de' yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase());
   };
 
   const processPayment = async (personId: string, file: File | null) => {
