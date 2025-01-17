@@ -28,7 +28,7 @@ export const MonthTransition = ({
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-gray-500" />
-              <span className="font-medium">Mes actual: {currentMonth}</span>
+              <span className="font-medium">Mes actual: {format(new Date(), "MMMM 'de' yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}</span>
             </div>
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-gray-500" />
