@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import { Person, Payment } from "../types/water";
 import { Button } from "./ui/button";
@@ -111,8 +111,8 @@ export const AllPaymentsHistory = ({
     // Ordenar los meses de más reciente a más antiguo
     return Object.fromEntries(
       Object.entries(monthlyPayments).sort((a, b) => {
-        const dateA = new Date(a[0].split(" de ")[1], new Date(a[0]).getMonth());
-        const dateB = new Date(b[0].split(" de ")[1], new Date(b[0]).getMonth());
+        const dateA = parse(a[0], "MMMM 'de' yyyy", new Date(), { locale: es });
+        const dateB = parse(b[0], "MMMM 'de' yyyy", new Date(), { locale: es });
         return dateB.getTime() - dateA.getTime();
       })
     );
