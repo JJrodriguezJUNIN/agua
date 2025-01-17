@@ -93,13 +93,6 @@ const Index = () => {
     }
   };
 
-  const formatCurrentMonth = () => {
-    const date = new Date();
-    const month = format(date, 'MMMM', { locale: es });
-    const year = format(date, 'yyyy');
-    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
-  };
-
   if (isLoading) {
     return <div>Cargando...</div>;
   }
@@ -152,7 +145,7 @@ const Index = () => {
       />
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Pago de Agua Region Sanitaria III</h1>
+        <h1 className="text-2xl font-bold">Sistema de Pago de Agua - Región Sanitaria III</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowAllPaymentsDialog(true)}>
             Ver Historial de Pagos
@@ -176,7 +169,7 @@ const Index = () => {
 
       <MonthTransition
         isAdmin={isAdmin}
-        currentMonth={config?.currentMonth || formatCurrentMonth()}
+        currentMonth={config?.currentMonth || format(new Date(), "MMMM yyyy", { locale: es })}
         isMonthActive={config?.isMonthActive ?? true}
         totalAmount={totalMonthlyAmount}
         bottleCount={config?.bottleCount || 0}

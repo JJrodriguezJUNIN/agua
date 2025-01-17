@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, DollarSign, Droplet } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface MonthTransitionProps {
   isAdmin: boolean;
@@ -26,7 +28,7 @@ export const MonthTransition = ({
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-gray-500" />
-              <span className="font-medium">Mes: {currentMonth}</span>
+              <span className="font-medium">Mes actual: {currentMonth}</span>
             </div>
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-gray-500" />
