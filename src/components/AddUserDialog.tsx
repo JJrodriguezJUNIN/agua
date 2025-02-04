@@ -37,9 +37,12 @@ export const AddUserDialog = ({
       return;
     }
 
+    const iconName = avatar.trim() || "person-circle";
+    const avatarUrl = `https://icons.getbootstrap.com/assets/icons/${iconName}.svg`;
+
     onAddUser({
       name,
-      avatar: `https://icons.getbootstrap.com/assets/icons/${avatar}.svg`,
+      avatar: avatarUrl,
       hasPaid: false,
       paymentHistory: [],
     });
@@ -79,3 +82,4 @@ export const AddUserDialog = ({
     </Dialog>
   );
 };
+
