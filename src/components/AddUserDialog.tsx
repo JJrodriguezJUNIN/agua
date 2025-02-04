@@ -24,7 +24,7 @@ export const AddUserDialog = ({
   onAddUser,
 }: AddUserDialogProps) => {
   const [name, setName] = useState("");
-  const [avatar, setAvatar] = useState("https://icons.getbootstrap.com/assets/icons/person-circle.svg");
+  const [avatar, setAvatar] = useState("person-circle");
   const { toast } = useToast();
 
   const handleAddUser = () => {
@@ -39,13 +39,13 @@ export const AddUserDialog = ({
 
     onAddUser({
       name,
-      avatar,
+      avatar: `https://icons.getbootstrap.com/assets/icons/${avatar}.svg`,
       hasPaid: false,
       paymentHistory: [],
     });
 
     setName("");
-    setAvatar("https://icons.getbootstrap.com/assets/icons/person-circle.svg");
+    setAvatar("person-circle");
     onOpenChange(false);
     
     toast({
@@ -67,7 +67,7 @@ export const AddUserDialog = ({
             onChange={(e) => setName(e.target.value)}
           />
           <Input
-            placeholder="URL del avatar (opcional)"
+            placeholder="Ícono de Bootstrap (por defecto: person-circle)"
             value={avatar}
             onChange={(e) => setAvatar(e.target.value)}
           />
