@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ export const AddUserDialog = ({
   onAddUser,
 }: AddUserDialogProps) => {
   const [name, setName] = useState("");
-  const [avatar, setAvatar] = useState("https://images.unsplash.com/photo-1649972904349-6e44c42644a7");
+  const [avatar, setAvatar] = useState("https://icons.getbootstrap.com/assets/icons/person-circle.svg");
   const { toast } = useToast();
 
   const handleAddUser = () => {
@@ -44,7 +45,7 @@ export const AddUserDialog = ({
     });
 
     setName("");
-    setAvatar("https://images.unsplash.com/photo-1649972904349-6e44c42644a7");
+    setAvatar("https://icons.getbootstrap.com/assets/icons/person-circle.svg");
     onOpenChange(false);
     
     toast({
