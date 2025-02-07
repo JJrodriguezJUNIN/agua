@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -191,12 +190,12 @@ export const useWaterData = () => {
     }
   };
 
-  const processCashPayment = async (personId: string, amount: number) => {
+  const processCashPayment = async (personId: string, amount: number, selectedMonth?: string) => {
     const person = people?.find(p => p.id === personId);
     if (!person || !config) return;
 
     try {
-      const currentMonth = config.currentMonth || getCurrentMonth();
+      const currentMonth = selectedMonth || config.currentMonth || getCurrentMonth();
 
       const payment = {
         date: new Date().toISOString(),

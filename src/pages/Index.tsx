@@ -74,9 +74,9 @@ const Index = () => {
     }
   };
 
-  const handleCashPayment = async (personId: string, amount: number) => {
+  const handleCashPayment = async (personId: string, amount: number, selectedMonth?: string) => {
     try {
-      await processCashPayment(personId, amount);
+      await processCashPayment(personId, amount, selectedMonth);
     } catch (error) {
       toast.error('Error al procesar el pago en efectivo');
       console.error(error);

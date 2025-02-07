@@ -30,7 +30,7 @@ interface AllPaymentsHistoryProps {
   isAdmin: boolean;
   onUpdateReceipt: (personId: string, paymentMonth: string, newReceipt: File) => void;
   onDeletePayment?: (personId: string, paymentMonth: string) => void;
-  onCashPayment?: (personId: string, amount: number) => void;
+  onCashPayment?: (personId: string, amount: number, selectedMonth?: string) => void;
 }
 
 interface MonthlyPayments {
@@ -61,6 +61,7 @@ export const AllPaymentsHistory = ({
   const [showCashPaymentDialog, setShowCashPaymentDialog] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [cashAmount, setCashAmount] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -76,15 +77,15 @@ export const AllPaymentsHistory = ({
   };
 
   const handleCashPayment = () => {
-    if (selectedPerson && onCashPayment && cashAmount) {
-      onCashPayment(selectedPerson.id, Number(cashAmount));
+    if (selectedPerson && onCashPayment && cashAmount && selectedMonth) {
+      onCashPayment(selectedPerson.id, Number(cashAmount), selectedMonth);
       setShowCashPaymentDialog(false);
       setCashAmount("");
       setSelectedPerson(null);
+      setSelectedMonth("");
     }
   };
 
-  // Agrupar pagos por mes
   const groupPaymentsByMonth = (): MonthlyPayments => {
     const monthlyPayments: MonthlyPayments = {};
 
@@ -108,7 +109,6 @@ export const AllPaymentsHistory = ({
       });
     });
 
-    // Ordenar los meses de más reciente a más antiguo
     return Object.fromEntries(
       Object.entries(monthlyPayments).sort((a, b) => {
         const dateA = parse(a[0], "MMMM 'de' yyyy", new Date(), { locale: es });
@@ -119,6 +119,18 @@ export const AllPaymentsHistory = ({
   };
 
   const monthlyPayments = groupPaymentsByMonth();
+
+  const getUniqueMonths = () => {
+    const months = new Set<string>();
+    Object.keys(monthlyPayments).forEach(month => {
+      months.add(month);
+    });
+    const currentMonth = format(new Date(), "MMMM 'de' yyyy", { locale: es });
+    months.add(currentMonth);
+    return Array.from(months);
+  };
+
+  const uniqueMonths = getUniqueMonths();
 
   return (
     <>
@@ -277,7 +289,7 @@ export const AllPaymentsHistory = ({
           <DialogHeader>
             <DialogTitle>Registrar Pago en Efectivo</DialogTitle>
             <DialogDescription>
-              Seleccione un usuario y ingrese el monto pagado en efectivo
+              Seleccione un usuario, el mes correspondiente y el monto pagado en efectivo
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -300,6 +312,21 @@ export const AllPaymentsHistory = ({
               </select>
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium">Mes</label>
+              <select
+                className="w-full p-2 border rounded"
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                value={selectedMonth}
+              >
+                <option value="">Seleccione un mes</option>
+                {uniqueMonths.map((month) => (
+                  <option key={month} value={month}>
+                    {month}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium">Monto</label>
               <Input
                 type="number"
@@ -314,7 +341,7 @@ export const AllPaymentsHistory = ({
               </Button>
               <Button
                 onClick={handleCashPayment}
-                disabled={!selectedPerson || !cashAmount}
+                disabled={!selectedPerson || !cashAmount || !selectedMonth}
               >
                 Registrar Pago
               </Button>
