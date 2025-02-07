@@ -176,9 +176,11 @@ export const useWaterData = () => {
       await updatePerson({
         id: personId,
         updates: {
-          hasPaid: true,
-          lastPaymentMonth: currentMonth,
-          pendingAmount: undefined,
+          // Solo marcar como pagado si es el mes actual
+          hasPaid: payment.month === currentMonth,
+          lastPaymentMonth: payment.month,
+          // Solo limpiar el monto pendiente si es el mes actual
+          pendingAmount: payment.month === currentMonth ? undefined : person.pendingAmount,
           paymentHistory: [...(person.paymentHistory || []), payment],
           receipt: receiptUrl,
         },
@@ -206,7 +208,7 @@ export const useWaterData = () => {
         bottleCount: config.bottleCount,
       };
 
-      // Solo marcamos hasPaid como true si el pago es para el mes actual
+      // Solo marcar como pagado si es el mes actual
       const isCurrentMonthPayment = paymentMonth === currentMonth;
 
       await updatePerson({
@@ -214,6 +216,7 @@ export const useWaterData = () => {
         updates: {
           hasPaid: isCurrentMonthPayment,
           lastPaymentMonth: paymentMonth,
+          // Solo limpiar el monto pendiente si es el mes actual
           pendingAmount: isCurrentMonthPayment ? undefined : person.pendingAmount,
           paymentHistory: [...(person.paymentHistory || []), payment],
         },
