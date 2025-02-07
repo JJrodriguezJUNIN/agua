@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -195,21 +196,25 @@ export const useWaterData = () => {
     if (!person || !config) return;
 
     try {
-      const currentMonth = selectedMonth || config.currentMonth || getCurrentMonth();
+      const currentMonth = config.currentMonth || getCurrentMonth();
+      const paymentMonth = selectedMonth || currentMonth;
 
       const payment = {
         date: new Date().toISOString(),
         amount: Math.round(amount),
-        month: currentMonth,
+        month: paymentMonth,
         bottleCount: config.bottleCount,
       };
+
+      // Solo marcamos hasPaid como true si el pago es para el mes actual
+      const isCurrentMonthPayment = paymentMonth === currentMonth;
 
       await updatePerson({
         id: personId,
         updates: {
-          hasPaid: true,
-          lastPaymentMonth: currentMonth,
-          pendingAmount: undefined,
+          hasPaid: isCurrentMonthPayment,
+          lastPaymentMonth: paymentMonth,
+          pendingAmount: isCurrentMonthPayment ? undefined : person.pendingAmount,
           paymentHistory: [...(person.paymentHistory || []), payment],
         },
       });
