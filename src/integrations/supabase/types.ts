@@ -48,6 +48,7 @@ export type Database = {
           bottle_price: number
           current_month: string | null
           id: number
+          is_amount_updated: boolean | null
           is_month_active: boolean | null
         }
         Insert: {
@@ -55,6 +56,7 @@ export type Database = {
           bottle_price?: number
           current_month?: string | null
           id?: number
+          is_amount_updated?: boolean | null
           is_month_active?: boolean | null
         }
         Update: {
@@ -62,6 +64,7 @@ export type Database = {
           bottle_price?: number
           current_month?: string | null
           id?: number
+          is_amount_updated?: boolean | null
           is_month_active?: boolean | null
         }
         Relationships: []

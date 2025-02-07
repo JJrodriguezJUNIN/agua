@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -23,6 +24,7 @@ const mapSupabaseConfigToConfig = (config: SupabaseWaterConfig): WaterConfig => 
   bottleCount: config.bottle_count,
   currentMonth: config.current_month,
   isMonthActive: config.is_month_active,
+  isAmountUpdated: config.is_amount_updated,
 });
 
 export const useWaterData = () => {
@@ -61,6 +63,7 @@ export const useWaterData = () => {
         bottle_count: updates.bottleCount,
         current_month: updates.currentMonth,
         is_month_active: updates.isMonthActive,
+        is_amount_updated: updates.isAmountUpdated,
       })
       .eq('id', 1);
 

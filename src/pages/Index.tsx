@@ -93,6 +93,20 @@ const Index = () => {
     }
   };
 
+  const handleToggleAmountUpdated = async () => {
+    if (!config) return;
+    try {
+      await updateConfig({
+        ...config,
+        isAmountUpdated: !config.isAmountUpdated
+      });
+      toast.success(config.isAmountUpdated ? 'Importe marcado como no actualizado' : 'Importe marcado como actualizado');
+    } catch (error) {
+      toast.error('Error al actualizar el estado del importe');
+      console.error(error);
+    }
+  };
+
   if (isLoading) {
     return <div>Cargando...</div>;
   }
@@ -171,9 +185,11 @@ const Index = () => {
         isAdmin={isAdmin}
         currentMonth={config?.currentMonth || format(new Date(), "MMMM yyyy", { locale: es })}
         isMonthActive={config?.isMonthActive ?? true}
+        isAmountUpdated={config?.isAmountUpdated}
         totalAmount={totalMonthlyAmount}
         bottleCount={config?.bottleCount || 0}
         onStartNewMonth={handleStartNewMonth}
+        onToggleAmountUpdated={isAdmin ? handleToggleAmountUpdated : undefined}
       />
 
       {isAdmin && (

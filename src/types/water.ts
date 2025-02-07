@@ -1,3 +1,4 @@
+
 import { Json } from "../integrations/supabase/types";
 
 export interface Payment {
@@ -26,6 +27,7 @@ export interface WaterConfig {
   bottleCount: number;
   currentMonth?: string;
   isMonthActive?: boolean;
+  isAmountUpdated?: boolean;
 }
 
 // Supabase interfaces that match the database schema
@@ -46,4 +48,6 @@ export interface SupabaseWaterConfig {
   bottle_count: number;
   current_month?: string;
   is_month_active?: boolean;
+  is_amount_updated?: boolean;
 }
+
