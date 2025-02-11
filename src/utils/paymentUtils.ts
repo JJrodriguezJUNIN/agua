@@ -57,16 +57,21 @@ export const preparePaymentUpdate = (
   const isCurrentMonthPayment = payment.month === currentMonth;
   const updatedPaymentHistory = [...(person.paymentHistory || []), payment];
 
+  // Check if the user has paid for the current month
+  const hasCurrentMonthPayment = updatedPaymentHistory.some(p => p.month === currentMonth);
+
+  // Check if all previous months are paid
   const uniqueMonths = new Set(updatedPaymentHistory.map(p => p.month));
   const hasPaidAllMonths = Array.from(uniqueMonths).every(month => 
     updatedPaymentHistory.some(p => p.month === month)
   );
 
   return {
-    hasPaid: isCurrentMonthPayment && hasPaidAllMonths,
+    hasPaid: hasCurrentMonthPayment && hasPaidAllMonths,
     lastPaymentMonth: payment.month,
     pendingAmount: isCurrentMonthPayment ? undefined : person.pendingAmount,
     paymentHistory: updatedPaymentHistory,
     ...(payment.receipt && { receipt: payment.receipt }),
   };
 };
+
