@@ -1,13 +1,9 @@
 
 import { Json } from "../integrations/supabase/types";
+import { PaymentRecord } from "./payment";
 
-export interface Payment {
+export interface Payment extends PaymentRecord {
   [key: string]: string | number | undefined;
-  date: string;
-  amount: number;
-  receipt?: string;
-  month: string;
-  bottleCount?: number;
 }
 
 export interface Person {
@@ -30,7 +26,6 @@ export interface WaterConfig {
   isAmountUpdated?: boolean;
 }
 
-// Supabase interfaces that match the database schema
 export interface SupabasePerson {
   id: string;
   name: string;
@@ -50,4 +45,3 @@ export interface SupabaseWaterConfig {
   is_month_active?: boolean;
   is_amount_updated?: boolean;
 }
-

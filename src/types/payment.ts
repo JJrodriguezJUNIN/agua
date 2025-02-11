@@ -14,6 +14,7 @@ export interface PaymentRecord {
   month: string;
   bottleCount?: number;
   receipt?: string;
+  [key: string]: string | number | undefined;
 }
 
 export interface PaymentUpdateParams {
