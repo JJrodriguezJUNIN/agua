@@ -1,3 +1,4 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,7 @@ export const UserCard = ({
   isAdmin,
 }: UserCardProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const hasPendingPayment = !person.hasPaid && person.pendingAmount;
+  const hasPendingPayment = person.pendingAmount > 0;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -61,27 +62,27 @@ export const UserCard = ({
             <span 
               className={cn(
                 "text-sm font-medium px-3 py-1 rounded-full",
-                person.hasPaid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                hasPendingPayment ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
               )}
             >
-              {person.hasPaid ? `Pagado - ${person.lastPaymentMonth}` : "Pendiente"}
+              {hasPendingPayment ? "Pendiente" : `Pagado - ${person.lastPaymentMonth}`}
             </span>
             {person.lastPaymentMonth && (
               <span className="text-sm text-gray-600">
                 Último pago: {person.lastPaymentMonth}
               </span>
             )}
-            {person.pendingAmount && !person.hasPaid && (
+            {hasPendingPayment && (
               <div className="text-center">
                 <span className="text-sm text-red-600 font-semibold block">
                   Monto pendiente: ${person.pendingAmount}
                 </span>
                 <span className="text-xs text-gray-500">
-                  Acumulado de meses anteriores
+                  Pago pendiente
                 </span>
               </div>
             )}
-            {!person.hasPaid && (
+            {hasPendingPayment && (
               <>
                 <div className="flex items-center gap-2">
                   <Upload className="h-4 w-4" />

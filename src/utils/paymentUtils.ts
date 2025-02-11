@@ -56,21 +56,11 @@ export const preparePaymentUpdate = (
 ) => {
   const updatedPaymentHistory = [...(person.paymentHistory || []), payment];
 
-  // Verificamos si ha pagado específicamente el mes actual
-  const hasCurrentMonthPayment = updatedPaymentHistory.some(p => p.month === currentMonth);
-
-  const mockConfig: WaterConfig = {
-    id: 1,
-    bottlePrice: payment.amount,
-    bottleCount: payment.bottleCount || 1
-  };
-
   return {
-    hasPaid: hasCurrentMonthPayment,
+    hasPaid: true,
     lastPaymentMonth: payment.month,
-    pendingAmount: hasCurrentMonthPayment ? undefined : (person.pendingAmount || calculatePaymentAmount(mockConfig, 1)),
+    pendingAmount: 0,
     paymentHistory: updatedPaymentHistory,
     ...(payment.receipt && { receipt: payment.receipt }),
   };
 };
-
