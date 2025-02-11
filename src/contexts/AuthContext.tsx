@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,19 +17,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Check initial session
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Error checking session:", error);
-        return;
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error checking session:", error);
+          // Clear any stale session data
+          await supabase.auth.signOut();
+          setIsAdmin(false);
+          return;
+        }
+        setIsAdmin(session?.user?.email === "juan@admin.com");
+      } catch (error) {
+        console.error("Session check failed:", error);
+        // Clear any stale session data
+        await supabase.auth.signOut();
+        setIsAdmin(false);
       }
-      setIsAdmin(session?.user?.email === "juan@admin.com");
     };
 
     checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setIsAdmin(session?.user?.email === "juan@admin.com");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
+      if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed successfully");
+      } else if (event === 'SIGNED_OUT') {
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(session?.user?.email === "juan@admin.com");
+      }
     });
 
     return () => {
@@ -66,8 +84,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      setIsAdmin(false);
       const { error } = await supabase.auth.signOut();
+      setIsAdmin(false);
       
       if (error) {
         console.error("Sign out error:", error);
