@@ -56,13 +56,13 @@ export const preparePaymentUpdate = (
 ) => {
   const updatedPaymentHistory = [...(person.paymentHistory || []), payment];
 
-  // Solo verificamos si pagó el mes actual
+  // Verificamos si ha pagado específicamente el mes actual
   const hasCurrentMonthPayment = updatedPaymentHistory.some(p => p.month === currentMonth);
 
   return {
     hasPaid: hasCurrentMonthPayment,
     lastPaymentMonth: payment.month,
-    pendingAmount: hasCurrentMonthPayment ? undefined : person.pendingAmount,
+    pendingAmount: hasCurrentMonthPayment ? undefined : (person.pendingAmount || calculatePaymentAmount({ bottlePrice: payment.amount, bottleCount: payment.bottleCount }, 1)),
     paymentHistory: updatedPaymentHistory,
     ...(payment.receipt && { receipt: payment.receipt }),
   };
