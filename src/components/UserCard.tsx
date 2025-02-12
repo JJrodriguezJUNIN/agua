@@ -35,9 +35,11 @@ export const UserCard = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
+    console.log("Archivo seleccionado:", file); // Para debug
   };
 
   const handlePayment = () => {
+    console.log("Intentando pagar con archivo:", selectedFile); // Para debug
     if (selectedFile) {
       onPayment(person.id, selectedFile);
       setSelectedFile(null);
@@ -84,13 +86,18 @@ export const UserCard = ({
             )}
             {hasPendingPayment && (
               <>
-                <div className="flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
+                <div className="flex flex-col items-center gap-2 w-full">
                   <Input
                     type="file"
                     onChange={handleFileChange}
                     accept="image/*,.pdf"
+                    className="w-full"
                   />
+                  {selectedFile && (
+                    <span className="text-sm text-green-600">
+                      Archivo seleccionado: {selectedFile.name}
+                    </span>
+                  )}
                 </div>
                 {person.receipt && (
                   <Dialog>
@@ -112,9 +119,12 @@ export const UserCard = ({
                 <Button
                   onClick={handlePayment}
                   disabled={!selectedFile}
-                  className="w-full"
+                  className={cn(
+                    "w-full",
+                    selectedFile ? "bg-primary hover:bg-primary/90" : "bg-gray-300"
+                  )}
                 >
-                  Pagar ${person.pendingAmount || amount}
+                  {selectedFile ? `Pagar $${person.pendingAmount || amount}` : "Seleccione un comprobante"}
                 </Button>
               </>
             )}
