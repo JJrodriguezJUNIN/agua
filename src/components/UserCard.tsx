@@ -30,7 +30,7 @@ export const UserCard = ({
   isAdmin,
 }: UserCardProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const hasPendingPayment = person.pendingAmount > 0;
+  const hasPendingPayment = !person.hasPaid || (person.pendingAmount && person.pendingAmount > 0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -75,10 +75,10 @@ export const UserCard = ({
             {hasPendingPayment && (
               <div className="text-center">
                 <span className="text-sm text-red-600 font-semibold block">
-                  Monto pendiente: ${person.pendingAmount}
+                  Monto pendiente: ${person.pendingAmount || amount}
                 </span>
                 <span className="text-xs text-gray-500">
-                  Pago pendiente
+                  {person.pendingAmount ? "Acumulado de meses anteriores" : "Mes actual pendiente"}
                 </span>
               </div>
             )}
@@ -114,7 +114,7 @@ export const UserCard = ({
                   disabled={!selectedFile}
                   className="w-full"
                 >
-                  Pagar ${amount}
+                  Pagar ${person.pendingAmount || amount}
                 </Button>
               </>
             )}

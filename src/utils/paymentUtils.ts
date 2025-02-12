@@ -56,10 +56,22 @@ export const preparePaymentUpdate = (
 ) => {
   const updatedPaymentHistory = [...(person.paymentHistory || []), payment];
 
+  // Verificar si el usuario ha pagado el mes actual
+  const hasCurrentMonthPayment = updatedPaymentHistory.some(
+    p => p.month === currentMonth
+  );
+
+  // Calcular el monto pendiente
+  let pendingAmount = person.pendingAmount || 0;
+  if (payment.month === currentMonth) {
+    // Si es un pago del mes actual, restamos el monto pagado del pendiente
+    pendingAmount = Math.max(0, pendingAmount - payment.amount);
+  }
+
   return {
-    hasPaid: true,
+    hasPaid: hasCurrentMonthPayment && pendingAmount === 0,
     lastPaymentMonth: payment.month,
-    pendingAmount: 0,
+    pendingAmount,
     paymentHistory: updatedPaymentHistory,
     ...(payment.receipt && { receipt: payment.receipt }),
   };
