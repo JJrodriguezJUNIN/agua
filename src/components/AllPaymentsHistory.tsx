@@ -173,7 +173,16 @@ export const AllPaymentsHistory = ({
                                 locale: es,
                               })}
                             </TableCell>
-                            <TableCell>${payment.amount}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span>${payment.amount}</span>
+                                {payment.adminEditedAmount && (
+                                  <span className="text-sm text-blue-600">
+                                    Monto editado: ${payment.adminEditedAmount}
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell>{payment.bottleCount || "N/A"}</TableCell>
                             <TableCell>
                               {payment.receipt && (

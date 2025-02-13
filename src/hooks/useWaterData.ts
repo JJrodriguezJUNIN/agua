@@ -142,28 +142,23 @@ export const useWaterData = () => {
       }
 
       const currentMonth = config.currentMonth || getCurrentMonth();
-      const paymentAmount = customAmount !== undefined ? customAmount : calculatePaymentAmount(config, people.length);
-      const payment = createPaymentRecord({ person, config, currentMonth }, paymentAmount, undefined, receiptUrl);
+      const regularAmount = calculatePaymentAmount(config, people.length);
+      const payment = {
+        ...createPaymentRecord({ person, config, currentMonth }, regularAmount, undefined, receiptUrl),
+        ...(customAmount !== undefined && { adminEditedAmount: customAmount }),
+      };
 
-      // Calcular monto a favor si el pago es mayor que lo debido
-      const requiredAmount = person.pendingAmount || calculatePaymentAmount(config, people.length);
-      const newCreditAmount = paymentAmount > requiredAmount ? paymentAmount - requiredAmount : 0;
-      const newPendingAmount = Math.max(0, requiredAmount - paymentAmount);
+      // El monto a favor se calcula basado en el pago regular, no en el monto editado
+      const requiredAmount = person.pendingAmount || regularAmount;
+      const paymentAmountForCredit = customAmount !== undefined ? regularAmount : payment.amount;
+      const newCreditAmount = paymentAmountForCredit > requiredAmount ? paymentAmountForCredit - requiredAmount : 0;
+      const newPendingAmount = Math.max(0, requiredAmount - paymentAmountForCredit);
 
       const updates = {
         ...preparePaymentUpdate(person, payment, currentMonth),
         creditAmount: (person.creditAmount || 0) + newCreditAmount,
         pendingAmount: newPendingAmount,
-        paymentHistoryAdmin: person.paymentHistoryAdmin || [],
       };
-
-      if (customAmount !== undefined) {
-        const adminPayment = {
-          ...payment,
-          isAdminEdited: true as boolean | undefined
-        };
-        updates.paymentHistoryAdmin = [...updates.paymentHistoryAdmin, adminPayment];
-      }
 
       await updatePerson({ id: personId, updates });
       toast.success('Pago procesado exitosamente');
