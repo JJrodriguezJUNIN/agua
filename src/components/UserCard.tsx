@@ -12,7 +12,7 @@ import { useState } from "react";
 interface UserCardProps {
   person: Person;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, id: string) => void;
-  onPayment: (id: string, file: File | null) => void;
+  onPayment: (id: string, file: File | null, customAmount?: number) => void;
   onEdit: (person: Person) => void;
   onDelete: (id: string) => void;
   onShowHistory: (person: Person) => void;
@@ -30,19 +30,20 @@ export const UserCard = ({
   isAdmin,
 }: UserCardProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("");
   const hasPendingPayment = !person.hasPaid || (person.pendingAmount && person.pendingAmount > 0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
-    console.log("Archivo seleccionado:", file); // Para debug
   };
 
   const handlePayment = () => {
-    console.log("Intentando pagar con archivo:", selectedFile); // Para debug
     if (selectedFile) {
-      onPayment(person.id, selectedFile);
+      const paymentAmount = customAmount ? parseInt(customAmount) : undefined;
+      onPayment(person.id, selectedFile, paymentAmount);
       setSelectedFile(null);
+      setCustomAmount("");
     }
   };
 
@@ -74,6 +75,11 @@ export const UserCard = ({
                 Último pago: {person.lastPaymentMonth}
               </span>
             )}
+            {person.creditAmount && person.creditAmount > 0 && (
+              <span className="text-sm text-green-600 font-semibold">
+                Monto a favor: ${person.creditAmount}
+              </span>
+            )}
             {hasPendingPayment && (
               <div className="text-center">
                 <span className="text-sm text-red-600 font-semibold block">
@@ -97,6 +103,17 @@ export const UserCard = ({
                     <span className="text-sm text-green-600">
                       Archivo seleccionado: {selectedFile.name}
                     </span>
+                  )}
+                  {isAdmin && (
+                    <div className="w-full">
+                      <Input
+                        type="number"
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        placeholder="Monto personalizado"
+                        className="mt-2"
+                      />
+                    </div>
                   )}
                 </div>
                 {person.receipt && (
@@ -124,7 +141,7 @@ export const UserCard = ({
                     selectedFile ? "bg-primary hover:bg-primary/90" : "bg-gray-300"
                   )}
                 >
-                  {selectedFile ? `Pagar $${person.pendingAmount || amount}` : "Seleccione un comprobante"}
+                  {selectedFile ? `Pagar $${customAmount || person.pendingAmount || amount}` : "Seleccione un comprobante"}
                 </Button>
               </>
             )}

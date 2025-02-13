@@ -13,8 +13,10 @@ export interface Person {
   hasPaid: boolean;
   receipt?: string;
   paymentHistory: Payment[];
+  paymentHistoryAdmin?: Payment[];
   lastPaymentMonth?: string;
   pendingAmount?: number;
+  creditAmount?: number;
 }
 
 export interface WaterConfig {
@@ -33,8 +35,10 @@ export interface SupabasePerson {
   has_paid: boolean;
   receipt?: string;
   payment_history: Json[];
+  payment_history_admin?: Json[];
   last_payment_month?: string;
   pending_amount?: number;
+  credit_amount?: number;
 }
 
 export interface SupabaseWaterConfig {

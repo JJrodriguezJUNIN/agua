@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -7,7 +6,7 @@ import { Json } from '../integrations/supabase/types';
 import { getCurrentMonth } from '../utils/dateUtils';
 import { 
   uploadReceipt, 
-  createPaymentRecord, 
+  createPaymentRecord,
   preparePaymentUpdate,
   calculatePaymentAmount 
 } from '../utils/paymentUtils';
@@ -19,8 +18,10 @@ const mapSupabasePersonToPerson = (person: SupabasePerson): Person => ({
   hasPaid: person.has_paid,
   receipt: person.receipt,
   paymentHistory: (person.payment_history || []) as any[],
+  paymentHistoryAdmin: (person.payment_history_admin || []) as any[],
   lastPaymentMonth: person.last_payment_month,
   pendingAmount: person.pending_amount,
+  creditAmount: person.credit_amount,
 });
 
 const mapSupabaseConfigToConfig = (config: SupabaseWaterConfig): WaterConfig => ({
@@ -88,6 +89,7 @@ export const useWaterData = () => {
         receipt: person.receipt,
         last_payment_month: person.lastPaymentMonth,
         pending_amount: person.pendingAmount,
+        credit_amount: person.credit_amount,
       });
 
     if (error) throw error;
@@ -106,6 +108,7 @@ export const useWaterData = () => {
         receipt: updates.receipt,
         last_payment_month: updates.lastPaymentMonth,
         pending_amount: updates.pendingAmount,
+        credit_amount: updates.creditAmount,
       })
       .eq('id', id);
 
@@ -125,7 +128,7 @@ export const useWaterData = () => {
     toast.success('Usuario eliminado exitosamente');
   };
 
-  const processPayment = async (personId: string, file: File | null) => {
+  const processPayment = async (personId: string, file: File | null, customAmount?: number) => {
     const person = people?.find(p => p.id === personId);
     if (!person || !config || !file) return;
 
@@ -137,9 +140,25 @@ export const useWaterData = () => {
       }
 
       const currentMonth = config.currentMonth || getCurrentMonth();
-      const payment = createPaymentRecord({ person, config, currentMonth }, undefined, undefined, receiptUrl);
-      const updates = preparePaymentUpdate(person, payment, currentMonth);
-      
+      const paymentAmount = customAmount !== undefined ? customAmount : calculatePaymentAmount(config, people.length);
+      const payment = createPaymentRecord({ person, config, currentMonth }, paymentAmount, undefined, receiptUrl);
+
+      // Calcular monto a favor si el pago es mayor que lo debido
+      const requiredAmount = person.pendingAmount || calculatePaymentAmount(config, people.length);
+      const newCreditAmount = paymentAmount > requiredAmount ? paymentAmount - requiredAmount : 0;
+      const newPendingAmount = Math.max(0, requiredAmount - paymentAmount);
+
+      const updates = {
+        ...preparePaymentUpdate(person, payment, currentMonth),
+        creditAmount: (person.creditAmount || 0) + newCreditAmount,
+        pendingAmount: newPendingAmount,
+      };
+
+      if (customAmount !== undefined) {
+        const adminPayment = { ...payment, isAdminEdited: true };
+        updates.paymentHistoryAdmin = [...(person.paymentHistoryAdmin || []), adminPayment];
+      }
+
       await updatePerson({ id: personId, updates });
       toast.success('Pago procesado exitosamente');
     } catch (error) {
@@ -177,13 +196,18 @@ export const useWaterData = () => {
     });
 
     for (const person of people) {
-      const pendingAmount = person.hasPaid ? 0 : (person.pendingAmount || 0) + calculatePaymentAmount(config, people.length);
+      // Calcular nuevo monto pendiente considerando el monto a favor
+      const monthlyAmount = calculatePaymentAmount(config, people.length);
+      const creditAmount = person.creditAmount || 0;
+      const newPendingAmount = Math.max(0, monthlyAmount - creditAmount);
+      const remainingCredit = Math.max(0, creditAmount - monthlyAmount);
       
       await updatePerson({
         id: person.id,
         updates: {
-          hasPaid: false,
-          pendingAmount,
+          hasPaid: newPendingAmount === 0,
+          pendingAmount: person.hasPaid ? newPendingAmount : (person.pendingAmount || 0) + newPendingAmount,
+          creditAmount: remainingCredit,
         },
       });
     }

@@ -12,31 +12,37 @@ export type Database = {
       people: {
         Row: {
           avatar: string
+          credit_amount: number | null
           has_paid: boolean
           id: string
           last_payment_month: string | null
           name: string
           payment_history: Json[] | null
+          payment_history_admin: Json[] | null
           pending_amount: number | null
           receipt: string | null
         }
         Insert: {
           avatar: string
+          credit_amount?: number | null
           has_paid?: boolean
           id?: string
           last_payment_month?: string | null
           name: string
           payment_history?: Json[] | null
+          payment_history_admin?: Json[] | null
           pending_amount?: number | null
           receipt?: string | null
         }
         Update: {
           avatar?: string
+          credit_amount?: number | null
           has_paid?: boolean
           id?: string
           last_payment_month?: string | null
           name?: string
           payment_history?: Json[] | null
+          payment_history_admin?: Json[] | null
           pending_amount?: number | null
           receipt?: string | null
         }
