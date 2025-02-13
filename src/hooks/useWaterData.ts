@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -159,7 +158,10 @@ export const useWaterData = () => {
       };
 
       if (customAmount !== undefined) {
-        const adminPayment = { ...payment, isAdminEdited: true };
+        const adminPayment = {
+          ...payment,
+          isAdminEdited: true as boolean | undefined
+        };
         updates.paymentHistoryAdmin = [...updates.paymentHistoryAdmin, adminPayment];
       }
 
