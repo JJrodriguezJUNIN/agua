@@ -176,19 +176,23 @@ export const useWaterData = () => {
     try {
       const currentMonth = config.currentMonth || getCurrentMonth();
       const regularAmount = calculatePaymentAmount(config, people.length);
-      const payment = {
-        ...createPaymentRecord({ person, config, currentMonth }, amount, selectedMonth),
-        adminEditedAmount: amount,
-      };
+      
+      // Crear el registro de pago con el monto editado
+      const payment = createPaymentRecord({ person, config, currentMonth }, regularAmount, selectedMonth);
+      payment.adminEditedAmount = amount;
 
-      // Calcular monto a favor basado en el monto regular
+      // El monto a favor se calcula como la diferencia entre el pago realizado y el monto requerido
       const requiredAmount = person.pendingAmount || regularAmount;
-      const paymentAmountForCredit = regularAmount;
       const newCreditAmount = amount > requiredAmount ? amount - requiredAmount : 0;
       const newPendingAmount = Math.max(0, requiredAmount - amount);
 
+      // Actualizar el historial de pagos y los montos
+      const updatedPaymentHistory = [...(person.paymentHistory || []), payment];
+      
       const updates = {
-        ...preparePaymentUpdate(person, payment, currentMonth),
+        paymentHistory: updatedPaymentHistory,
+        hasPaid: true,
+        lastPaymentMonth: currentMonth,
         creditAmount: (person.creditAmount || 0) + newCreditAmount,
         pendingAmount: newPendingAmount,
       };
