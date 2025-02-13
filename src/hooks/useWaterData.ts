@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -308,6 +307,43 @@ export const useWaterData = () => {
     }
   };
 
+  const editPaymentAmount = async (personId: string, paymentMonth: string, newAmount: number) => {
+    const person = people?.find(p => p.id === personId);
+    if (!person || !config) return;
+
+    try {
+      const updatedPaymentHistory = person.paymentHistory.map(payment => {
+        if (payment.month === paymentMonth) {
+          return {
+            ...payment,
+            adminEditedAmount: newAmount,
+          };
+        }
+        return payment;
+      });
+
+      // Recalcular el monto a favor y pendiente
+      const regularAmount = calculatePaymentAmount(config, people.length);
+      const requiredAmount = person.pendingAmount || regularAmount;
+      const newCreditAmount = newAmount > requiredAmount ? newAmount - requiredAmount : 0;
+      const newPendingAmount = Math.max(0, requiredAmount - newAmount);
+
+      await updatePerson({
+        id: personId,
+        updates: {
+          paymentHistory: updatedPaymentHistory,
+          creditAmount: newCreditAmount,
+          pendingAmount: newPendingAmount,
+        },
+      });
+
+      toast.success('Monto actualizado exitosamente');
+    } catch (error) {
+      console.error('Edit payment amount error:', error);
+      toast.error('Error al actualizar el monto');
+    }
+  };
+
   return {
     config,
     people,
@@ -320,6 +356,7 @@ export const useWaterData = () => {
     processCashPayment,
     updateReceipt,
     deletePayment,
-    startNewMonth
+    startNewMonth,
+    editPaymentAmount
   };
 };

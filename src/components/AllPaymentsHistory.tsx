@@ -22,6 +22,7 @@ import { useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 import { DialogDescription } from "./ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { useWaterData } from "../hooks/useWaterData";
 
 interface AllPaymentsHistoryProps {
   open: boolean;
@@ -58,10 +59,16 @@ export const AllPaymentsHistory = ({
     personId: string;
     month: string;
   } | null>(null);
+  const [editingAmount, setEditingAmount] = useState<{
+    personId: string;
+    month: string;
+    amount: string;
+  } | null>(null);
   const [showCashPaymentDialog, setShowCashPaymentDialog] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [cashAmount, setCashAmount] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
+  const { editPaymentAmount } = useWaterData();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -83,6 +90,14 @@ export const AllPaymentsHistory = ({
       setCashAmount("");
       setSelectedPerson(null);
       setSelectedMonth("");
+    }
+  };
+
+  const handleAmountEdit = async () => {
+    if (editingAmount) {
+      const { personId, month, amount } = editingAmount;
+      await editPaymentAmount(personId, month, Number(amount));
+      setEditingAmount(null);
     }
   };
 
@@ -175,11 +190,55 @@ export const AllPaymentsHistory = ({
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span>${payment.amount}</span>
-                                {payment.adminEditedAmount && (
-                                  <span className="text-sm text-blue-600">
-                                    Monto editado: ${payment.adminEditedAmount}
-                                  </span>
+                                {editingAmount?.personId === person.id && 
+                                  editingAmount?.month === payment.month ? (
+                                  <div className="flex gap-2 items-center">
+                                    <Input
+                                      type="number"
+                                      value={editingAmount.amount}
+                                      onChange={(e) => setEditingAmount({
+                                        ...editingAmount,
+                                        amount: e.target.value
+                                      })}
+                                      className="w-24"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      onClick={handleAmountEdit}
+                                    >
+                                      Guardar
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setEditingAmount(null)}
+                                    >
+                                      Cancelar
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span>${payment.amount}</span>
+                                    {payment.adminEditedAmount && (
+                                      <span className="text-sm text-blue-600">
+                                        Monto editado: ${payment.adminEditedAmount}
+                                      </span>
+                                    )}
+                                    {isAdmin && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="mt-2"
+                                        onClick={() => setEditingAmount({
+                                          personId: person.id,
+                                          month: payment.month,
+                                          amount: (payment.adminEditedAmount || payment.amount).toString()
+                                        })}
+                                      >
+                                        Editar monto
+                                      </Button>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             </TableCell>
