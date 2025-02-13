@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -174,8 +175,23 @@ export const useWaterData = () => {
 
     try {
       const currentMonth = config.currentMonth || getCurrentMonth();
-      const payment = createPaymentRecord({ person, config, currentMonth }, amount, selectedMonth);
-      const updates = preparePaymentUpdate(person, payment, currentMonth);
+      const regularAmount = calculatePaymentAmount(config, people.length);
+      const payment = {
+        ...createPaymentRecord({ person, config, currentMonth }, amount, selectedMonth),
+        adminEditedAmount: amount,
+      };
+
+      // Calcular monto a favor basado en el monto regular
+      const requiredAmount = person.pendingAmount || regularAmount;
+      const paymentAmountForCredit = regularAmount;
+      const newCreditAmount = amount > requiredAmount ? amount - requiredAmount : 0;
+      const newPendingAmount = Math.max(0, requiredAmount - amount);
+
+      const updates = {
+        ...preparePaymentUpdate(person, payment, currentMonth),
+        creditAmount: (person.creditAmount || 0) + newCreditAmount,
+        pendingAmount: newPendingAmount,
+      };
 
       await updatePerson({ id: personId, updates });
       toast.success('Pago en efectivo registrado exitosamente');
