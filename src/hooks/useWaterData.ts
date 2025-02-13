@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Person, WaterConfig, SupabasePerson, SupabaseWaterConfig } from '../types/water';
@@ -89,7 +90,8 @@ export const useWaterData = () => {
         receipt: person.receipt,
         last_payment_month: person.lastPaymentMonth,
         pending_amount: person.pendingAmount,
-        credit_amount: person.credit_amount,
+        credit_amount: person.creditAmount,
+        payment_history_admin: person.paymentHistoryAdmin as Json[],
       });
 
     if (error) throw error;
@@ -105,6 +107,7 @@ export const useWaterData = () => {
         avatar: updates.avatar,
         has_paid: updates.hasPaid,
         payment_history: updates.paymentHistory as Json[],
+        payment_history_admin: updates.paymentHistoryAdmin as Json[],
         receipt: updates.receipt,
         last_payment_month: updates.lastPaymentMonth,
         pending_amount: updates.pendingAmount,
@@ -152,11 +155,12 @@ export const useWaterData = () => {
         ...preparePaymentUpdate(person, payment, currentMonth),
         creditAmount: (person.creditAmount || 0) + newCreditAmount,
         pendingAmount: newPendingAmount,
+        paymentHistoryAdmin: person.paymentHistoryAdmin || [],
       };
 
       if (customAmount !== undefined) {
         const adminPayment = { ...payment, isAdminEdited: true };
-        updates.paymentHistoryAdmin = [...(person.paymentHistoryAdmin || []), adminPayment];
+        updates.paymentHistoryAdmin = [...updates.paymentHistoryAdmin, adminPayment];
       }
 
       await updatePerson({ id: personId, updates });
