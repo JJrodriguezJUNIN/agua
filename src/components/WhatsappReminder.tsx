@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface WhatsappReminderProps {
   people: Person[];
@@ -17,6 +18,11 @@ interface WhatsappReminderProps {
 export const WhatsappReminder = ({ people, currentMonth, amount }: WhatsappReminderProps) => {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [message, setMessage] = useState(`Recordatorio de pago de agua - ${currentMonth}
+    
+Monto a pagar: $${amount}
+
+Link a la aplicación: ${window.location.href}`);
 
   const getUnpaidUsers = () => {
     return people.filter(person => !person.hasPaid);
@@ -25,12 +31,6 @@ export const WhatsappReminder = ({ people, currentMonth, amount }: WhatsappRemin
   const handleWhatsappShare = () => {
     const unpaidUsers = getUnpaidUsers().filter(person => selectedUsers.includes(person.id));
     if (unpaidUsers.length === 0) return;
-
-    const message = `Recordatorio de pago de agua - ${currentMonth}
-    
-Monto a pagar: $${amount}
-
-Link a la aplicación: ${window.location.href}`;
 
     const encodedMessage = encodeURIComponent(message);
     
@@ -79,7 +79,7 @@ Link a la aplicación: ${window.location.href}`;
       </Button>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Enviar recordatorio por WhatsApp</DialogTitle>
           </DialogHeader>
@@ -94,27 +94,40 @@ Link a la aplicación: ${window.location.href}`;
               <Label htmlFor="selectAll">Seleccionar todos</Label>
             </div>
 
-            <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                <div className="flex flex-col gap-2">
+                  {unpaidUsers.map(person => (
+                    <div key={person.id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={person.id}
+                        checked={selectedUsers.includes(person.id)}
+                        onCheckedChange={() => handleSelectUser(person.id)}
+                      />
+                      <Label htmlFor={person.id} className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <span>{person.name}</span>
+                          <span className="text-sm text-gray-500">
+                            {person.phoneNumber || "Sin teléfono"}
+                          </span>
+                        </div>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+
               <div className="flex flex-col gap-2">
-                {unpaidUsers.map(person => (
-                  <div key={person.id} className="flex items-center gap-2">
-                    <Checkbox
-                      id={person.id}
-                      checked={selectedUsers.includes(person.id)}
-                      onCheckedChange={() => handleSelectUser(person.id)}
-                    />
-                    <Label htmlFor={person.id} className="flex-1">
-                      <div className="flex justify-between items-center">
-                        <span>{person.name}</span>
-                        <span className="text-sm text-gray-500">
-                          {person.phoneNumber || "Sin teléfono"}
-                        </span>
-                      </div>
-                    </Label>
-                  </div>
-                ))}
+                <Label htmlFor="message">Mensaje</Label>
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="h-[300px] resize-none"
+                  placeholder="Escribe tu mensaje aquí..."
+                />
               </div>
-            </ScrollArea>
+            </div>
 
             <Button 
               onClick={handleWhatsappShare}

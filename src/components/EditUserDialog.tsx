@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,6 +29,13 @@ export const EditUserDialog = ({
   const [avatar, setAvatar] = useState(user.avatar);
   const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || "");
   const { toast } = useToast();
+
+  // Actualizar el estado cuando cambia el usuario
+  useEffect(() => {
+    setName(user.name);
+    setAvatar(user.avatar);
+    setPhoneNumber(user.phoneNumber || "");
+  }, [user]);
 
   const handleEditUser = () => {
     if (!name || !avatar) {
