@@ -25,6 +25,7 @@ export const AddUserDialog = ({
 }: AddUserDialogProps) => {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("person-circle");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const { toast } = useToast();
 
   const handleAddUser = () => {
@@ -40,15 +41,23 @@ export const AddUserDialog = ({
     const iconName = avatar.trim() || "person-circle";
     const avatarUrl = `https://icons.getbootstrap.com/assets/icons/${iconName}.svg`;
 
+    // Format phone number: remove spaces and add country code if not present
+    let formattedPhone = phoneNumber.replace(/\s/g, "");
+    if (formattedPhone && !formattedPhone.startsWith("+")) {
+      formattedPhone = "+54" + formattedPhone;
+    }
+
     onAddUser({
       name,
       avatar: avatarUrl,
       hasPaid: false,
       paymentHistory: [],
+      phoneNumber: formattedPhone || null,
     });
 
     setName("");
     setAvatar("person-circle");
+    setPhoneNumber("");
     onOpenChange(false);
     
     toast({
@@ -73,6 +82,11 @@ export const AddUserDialog = ({
             placeholder="Ícono de Bootstrap (por defecto: person-circle)"
             value={avatar}
             onChange={(e) => setAvatar(e.target.value)}
+          />
+          <Input
+            placeholder="Número de teléfono (ej: +541112345678)"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
           />
         </div>
         <DialogFooter>

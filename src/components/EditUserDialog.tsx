@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,22 +27,30 @@ export const EditUserDialog = ({
 }: EditUserDialogProps) => {
   const [name, setName] = useState(user.name);
   const [avatar, setAvatar] = useState(user.avatar);
+  const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || "");
   const { toast } = useToast();
 
   const handleEditUser = () => {
     if (!name || !avatar) {
       toast({
         title: "Error",
-        description: "Por favor complete todos los campos",
+        description: "Por favor complete todos los campos obligatorios",
         variant: "destructive",
       });
       return;
+    }
+
+    // Format phone number: remove spaces and add country code if not present
+    let formattedPhone = phoneNumber.replace(/\s/g, "");
+    if (formattedPhone && !formattedPhone.startsWith("+")) {
+      formattedPhone = "+54" + formattedPhone;
     }
 
     onEditUser({
       ...user,
       name,
       avatar,
+      phoneNumber: formattedPhone || null,
     });
 
     onOpenChange(false);
@@ -68,6 +77,11 @@ export const EditUserDialog = ({
             placeholder="URL del avatar"
             value={avatar}
             onChange={(e) => setAvatar(e.target.value)}
+          />
+          <Input
+            placeholder="Número de teléfono (ej: +541112345678)"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
           />
         </div>
         <DialogFooter>

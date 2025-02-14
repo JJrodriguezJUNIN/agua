@@ -20,6 +20,7 @@ export type Database = {
           payment_history: Json[] | null
           payment_history_admin: Json[] | null
           pending_amount: number | null
+          phone_number: string | null
           receipt: string | null
         }
         Insert: {
@@ -32,6 +33,7 @@ export type Database = {
           payment_history?: Json[] | null
           payment_history_admin?: Json[] | null
           pending_amount?: number | null
+          phone_number?: string | null
           receipt?: string | null
         }
         Update: {
@@ -44,6 +46,7 @@ export type Database = {
           payment_history?: Json[] | null
           payment_history_admin?: Json[] | null
           pending_amount?: number | null
+          phone_number?: string | null
           receipt?: string | null
         }
         Relationships: []
