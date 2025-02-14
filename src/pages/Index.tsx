@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { WaterStats } from "@/components/WaterStats";
 import { AddUserDialog } from "@/components/AddUserDialog";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { AdminLogin } from "@/components/AdminLogin";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthTransition } from "@/components/MonthTransition";
+import { WhatsappReminder } from "@/components/WhatsappReminder";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -164,16 +166,22 @@ const Index = () => {
           <Button variant="outline" onClick={() => setShowAllPaymentsDialog(true)}>
             Ver Historial de Pagos
           </Button>
-          {isAdmin ? (
+          {isAdmin && (
             <>
               <Button variant="outline" onClick={() => setShowAddUserDialog(true)}>
                 Agregar Usuario
               </Button>
+              <WhatsappReminder 
+                people={people || []} 
+                currentMonth={config?.currentMonth || format(new Date(), "MMMM yyyy", { locale: es })}
+                amount={calculatePersonAmount()}
+              />
               <Button variant="outline" onClick={() => signOut()}>
                 Cerrar Sesión
               </Button>
             </>
-          ) : (
+          )}
+          {!isAdmin && (
             <Button variant="outline" onClick={() => setShowLoginDialog(true)}>
               Administrador
             </Button>
