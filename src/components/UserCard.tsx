@@ -2,12 +2,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Pencil, Trash2, Eye } from "lucide-react";
+import { Upload, Pencil, Trash2, Eye, PhoneOff, Phone } from "lucide-react";
 import { Person } from "../types/water";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface UserCardProps {
   person: Person;
@@ -56,10 +57,34 @@ export const UserCard = ({
     >
       <CardContent className="pt-6">
         <div className="flex flex-col items-center gap-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={person.avatar} alt={person.name} />
-            <AvatarFallback>{person.name[0]}</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={person.avatar} alt={person.name} />
+              <AvatarFallback>{person.name[0]}</AvatarFallback>
+            </Avatar>
+            {isAdmin && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="absolute -bottom-2 -right-2 rounded-full bg-white p-1 shadow">
+                      {person.phoneNumber ? (
+                        <Phone className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <PhoneOff className="h-4 w-4 text-red-500" />
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {person.phoneNumber ? (
+                      <p>Teléfono: {person.phoneNumber}</p>
+                    ) : (
+                      <p>Sin número de teléfono registrado</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
           <h3 className="text-lg font-semibold">{person.name}</h3>
           <div className="flex flex-col items-center gap-2">
             <span 
