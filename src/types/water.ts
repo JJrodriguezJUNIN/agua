@@ -17,6 +17,7 @@ export interface Person {
   lastPaymentMonth?: string;
   pendingAmount?: number;
   creditAmount?: number;
+  phoneNumber?: string | null;
 }
 
 export interface WaterConfig {
@@ -39,6 +40,7 @@ export interface SupabasePerson {
   last_payment_month?: string;
   pending_amount?: number;
   credit_amount?: number;
+  phone_number?: string | null;
 }
 
 export interface SupabaseWaterConfig {
