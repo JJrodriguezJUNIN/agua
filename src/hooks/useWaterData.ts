@@ -22,6 +22,7 @@ const mapSupabasePersonToPerson = (person: SupabasePerson): Person => ({
   lastPaymentMonth: person.last_payment_month,
   pendingAmount: person.pending_amount,
   creditAmount: person.credit_amount,
+  phoneNumber: person.phone_number,
 });
 
 const mapSupabaseConfigToConfig = (config: SupabaseWaterConfig): WaterConfig => ({
@@ -91,6 +92,7 @@ export const useWaterData = () => {
         pending_amount: person.pendingAmount,
         credit_amount: person.creditAmount,
         payment_history_admin: person.paymentHistoryAdmin as Json[],
+        phone_number: person.phoneNumber,
       });
 
     if (error) throw error;
@@ -111,6 +113,7 @@ export const useWaterData = () => {
         last_payment_month: updates.lastPaymentMonth,
         pending_amount: updates.pendingAmount,
         credit_amount: updates.creditAmount,
+        phone_number: updates.phoneNumber,
       })
       .eq('id', id);
 
