@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Share } from "lucide-react";
+import { Share, Upload } from "lucide-react";
 import { Person } from "@/types/water";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,6 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface WhatsappReminderProps {
   people: Person[];
@@ -23,25 +25,65 @@ export const WhatsappReminder = ({ people, currentMonth, amount }: WhatsappRemin
 Monto a pagar: $${amount}
 
 Link a la aplicación: ${window.location.href}`);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [base64Image, setBase64Image] = useState<string>("");
 
   const getUnpaidUsers = () => {
     return people.filter(person => !person.hasPaid);
   };
 
-  const handleWhatsappShare = () => {
+  const convertBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          // Remove the data:image/*;base64, prefix
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        }
+      };
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast.error("La imagen no debe superar los 2MB");
+        return;
+      }
+      setSelectedFile(file);
+      try {
+        const base64 = await convertBase64(file);
+        setBase64Image(base64);
+      } catch (error) {
+        console.error("Error converting file to base64:", error);
+        toast.error("Error al procesar la imagen");
+      }
+    }
+  };
+
+  const handleWhatsappShare = async () => {
     const unpaidUsers = getUnpaidUsers().filter(person => selectedUsers.includes(person.id));
     if (unpaidUsers.length === 0) return;
 
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Crear un grupo de WhatsApp con los números seleccionados
-    const phones = unpaidUsers
-      .filter(person => person.phoneNumber)
-      .map(person => person.phoneNumber)
-      .join(",");
+    const selectedUser = unpaidUsers[0]; // Tomamos el primer usuario para el mensaje inicial
+    if (!selectedUser.phoneNumber) {
+      toast.error("El usuario seleccionado no tiene número de teléfono");
+      return;
+    }
 
-    if (phones) {
-      window.open(`https://wa.me/${phones}?text=${encodedMessage}`, '_blank');
+    // Enviamos el mensaje de texto
+    const textMessage = encodeURIComponent(message);
+    const textUrl = `https://wa.me/${selectedUser.phoneNumber}?text=${textMessage}`;
+    window.open(textUrl, '_blank');
+
+    // Si hay una imagen, la enviamos en un segundo mensaje
+    if (base64Image) {
+      // Aquí podrías implementar la lógica para enviar la imagen usando una API
+      toast.info("La funcionalidad de envío de imágenes requiere una API de WhatsApp Business");
     }
   };
 
@@ -123,9 +165,24 @@ Link a la aplicación: ${window.location.href}`);
                   id="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="h-[300px] resize-none"
+                  className="h-[200px] resize-none"
                   placeholder="Escribe tu mensaje aquí..."
                 />
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="image">Imagen adjunta (opcional, máx 2MB)</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="cursor-pointer"
+                  />
+                  {selectedFile && (
+                    <div className="text-sm text-green-600">
+                      Imagen seleccionada: {selectedFile.name}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -136,6 +193,7 @@ Link a la aplicación: ${window.location.href}`);
               )}
             >
               Enviar recordatorio
+              {selectedFile && <Upload className="ml-2 h-4 w-4" />}
             </Button>
           </div>
         </DialogContent>
