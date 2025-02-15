@@ -16,6 +16,7 @@ interface WhatsAppResponse {
   token?: string;
   numero?: string;
   estado?: string;
+  message?: string;
 }
 
 serve(async (req) => {
@@ -74,7 +75,8 @@ serve(async (req) => {
               .upsert({
                 session_id: data.session,
                 status: 'connected',
-                token: data.session // Guardamos el session ID como token
+                token: data.session, // Guardamos el session ID como token
+                qr_code: null // Limpiamos el QR cuando está conectado
               });
 
             if (error) {
@@ -82,7 +84,7 @@ serve(async (req) => {
             }
 
             // Esperamos 4 segundos antes de resolver
-            await new Promise(resolve => setTimeout(resolve, 4000));
+            await new Promise(resolveTimeout => setTimeout(resolveTimeout, 4000));
             
             resolve({
               ...data,
@@ -102,6 +104,12 @@ serve(async (req) => {
             if (error) {
               console.error("Error guardando QR:", error);
             }
+
+            // Resolvemos con el QR para mostrarlo
+            resolve({
+              ...data,
+              message: "QR generado, escanee con WhatsApp"
+            });
           }
         }
 
@@ -109,6 +117,7 @@ serve(async (req) => {
           console.log("Iniciando lectura de OCR-Start Token");
         }
 
+        // Solo cerramos el socket cuando ya no necesitamos el QR o cuando está conectado
         if (!data.qr || data.qr === "CONECTADO") {
           socket.close();
           resolve(data);
@@ -117,7 +126,7 @@ serve(async (req) => {
 
       socket.onerror = (error) => {
         console.error("WebSocket error:", error);
-        reject(error);
+        reject(new Error("Error en la conexión WebSocket"));
       };
 
       // Timeout después de 30 segundos
