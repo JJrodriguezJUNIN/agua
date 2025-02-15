@@ -14,6 +14,8 @@ interface WhatsAppResponse {
   session?: string;
   status: string;
   token?: string;
+  numero?: string;
+  estado?: string;
 }
 
 serve(async (req) => {
@@ -64,24 +66,53 @@ serve(async (req) => {
         const data: WhatsAppResponse = JSON.parse(event.data);
         console.log("Mensaje recibido:", data);
 
-        if (data.op === "qr" && data.qr && data.session) {
-          // Guardar la sesión en la base de datos
-          const { error } = await supabase
-            .from('whatsapp_sessions')
-            .upsert({
-              session_id: data.session,
-              qr_code: data.qr,
-              status: data.status,
-              token: data.token
-            });
+        if (data.op === "qr") {
+          if (data.qr === "CONECTADO" && data.numero && data.session) {
+            // Cuando el QR ha sido escaneado exitosamente
+            const { error } = await supabase
+              .from('whatsapp_sessions')
+              .upsert({
+                session_id: data.session,
+                status: 'connected',
+                token: data.session // Guardamos el session ID como token
+              });
 
-          if (error) {
-            console.error("Error guardando sesión:", error);
+            if (error) {
+              console.error("Error guardando sesión conectada:", error);
+            }
+
+            // Esperamos 4 segundos antes de resolver
+            await new Promise(resolve => setTimeout(resolve, 4000));
+            
+            resolve({
+              ...data,
+              message: `Escaneo OK, su TOKEN WHATSAPP ES: ${data.session}, NUMERO CELULAR ES: ${data.numero}`
+            });
+          } else if (data.qr && data.session) {
+            // Actualizar QR en la base de datos
+            const { error } = await supabase
+              .from('whatsapp_sessions')
+              .upsert({
+                session_id: data.session,
+                qr_code: data.qr,
+                status: 'pending',
+                token: null
+              });
+
+            if (error) {
+              console.error("Error guardando QR:", error);
+            }
           }
         }
 
-        resolve(data);
-        socket.close();
+        if (data.status === "2") {
+          console.log("Iniciando lectura de OCR-Start Token");
+        }
+
+        if (!data.qr || data.qr === "CONECTADO") {
+          socket.close();
+          resolve(data);
+        }
       };
 
       socket.onerror = (error) => {
