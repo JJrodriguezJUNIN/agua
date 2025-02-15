@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WhatsappReminderProps {
   people: Person[];
@@ -19,6 +20,7 @@ interface WhatsappReminderProps {
 export const WhatsappReminder = ({ people, currentMonth, amount }: WhatsappReminderProps) => {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(`Recordatorio de pago de agua - ${currentMonth}
     
 Monto a pagar: $${amount}
@@ -29,19 +31,35 @@ Link a la aplicación: ${window.location.href}`);
     return people.filter(person => !person.hasPaid);
   };
 
-  const handleWhatsappShare = () => {
+  const handleWhatsappShare = async () => {
     const unpaidUsers = getUnpaidUsers().filter(person => selectedUsers.includes(person.id));
     if (unpaidUsers.length === 0) return;
 
-    const selectedUser = unpaidUsers[0];
-    if (!selectedUser.phoneNumber) {
-      toast.error("El usuario seleccionado no tiene número de teléfono");
-      return;
-    }
+    setIsLoading(true);
+    try {
+      const messages = unpaidUsers.map(user => ({
+        numero: user.phoneNumber,
+        mensaje: message
+      }));
 
-    const textMessage = encodeURIComponent(message);
-    const textUrl = `https://wa.me/${selectedUser.phoneNumber}?text=${textMessage}`;
-    window.open(textUrl, '_blank');
+      const { data, error } = await supabase.functions.invoke('whatsapp', {
+        body: { messages, operation: "send_messages" }
+      });
+
+      if (error) throw error;
+
+      if (data.status === "0") {
+        toast.success("Mensajes enviados correctamente");
+        setShowDialog(false);
+      } else {
+        toast.error("Error al enviar los mensajes");
+      }
+    } catch (error) {
+      console.error("Error sending WhatsApp messages:", error);
+      toast.error("Error al enviar los mensajes de WhatsApp");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSelectUser = (userId: string) => {
@@ -130,11 +148,11 @@ Link a la aplicación: ${window.location.href}`);
 
             <Button 
               onClick={handleWhatsappShare}
-              disabled={selectedUsers.length === 0 || !unpaidUsers.some(user => 
+              disabled={isLoading || selectedUsers.length === 0 || !unpaidUsers.some(user => 
                 selectedUsers.includes(user.id) && user.phoneNumber
               )}
             >
-              Enviar recordatorio
+              {isLoading ? "Enviando..." : "Enviar recordatorio"}
             </Button>
           </div>
         </DialogContent>
