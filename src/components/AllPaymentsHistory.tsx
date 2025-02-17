@@ -23,6 +23,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DialogDescription } from "./ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useWaterData } from "../hooks/useWaterData";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AllPaymentsHistoryProps {
   open: boolean;
@@ -69,6 +70,8 @@ export const AllPaymentsHistory = ({
   const [cashAmount, setCashAmount] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
   const { editPaymentAmount } = useWaterData();
+  const { user } = useAuth();
+  const currentUserId = user?.id;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -244,7 +247,7 @@ export const AllPaymentsHistory = ({
                             </TableCell>
                             <TableCell>{payment.bottleCount || "N/A"}</TableCell>
                             <TableCell>
-                              {payment.receipt && (
+                              {payment.receipt && (isAdmin || person.id === currentUserId) && (
                                 <a
                                   href={payment.receipt}
                                   target="_blank"
@@ -257,7 +260,7 @@ export const AllPaymentsHistory = ({
                             </TableCell>
                             <TableCell>
                               <div className="space-y-2">
-                                {(isAdmin || person.id === person.id) && (
+                                {(isAdmin || person.id === currentUserId) && (
                                   <>
                                     {editingPayment?.personId === person.id &&
                                     editingPayment?.month === payment.month ? (
