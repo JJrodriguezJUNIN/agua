@@ -1,69 +1,59 @@
-# Welcome to your Lovable project
+# Sistema de Pago de Agua - Región Sanitaria III
 
-## Project info
+Sistema de gestión de pagos de agua para la Región Sanitaria III.
 
-**URL**: https://lovable.dev/projects/d2dcbe46-2dd0-41c2-b865-349efc3d8399
+## Características
 
-## How can I edit this code?
+- Gestión de usuarios
+- Control de pagos mensuales
+- Historial de pagos
+- Recordatorios por WhatsApp
+- Panel de administración
+- Cálculo automático de montos
 
-There are several ways of editing your application.
+## Tecnologías
 
-**Use Lovable**
+- React + TypeScript
+- Vite
+- Supabase
+- TailwindCSS
+- shadcn/ui
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d2dcbe46-2dd0-41c2-b865-349efc3d8399) and start prompting.
+## Desarrollo Local
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Clonar el repositorio:
+```bash
+git clone https://github.com/JJrodriguezJUNIN/agua.git
+cd agua
+```
 
-**Use your preferred IDE**
+2. Instalar dependencias:
+```bash
+npm install
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+3. Crear archivo `.env` con las variables de entorno:
+```env
+VITE_SUPABASE_URL=tu_url_de_supabase
+VITE_SUPABASE_ANON_KEY=tu_clave_de_supabase
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4. Iniciar el servidor de desarrollo:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Despliegue
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+La aplicación está desplegada en Vercel y puede ser accedida en:
+[https://agua-rs3.vercel.app](https://agua-rs3.vercel.app)
 
-**Use GitHub Codespaces**
+## Acceso al Sistema
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Para acceder como administrador:
+- Usuario: Juan
+- Contraseña: 361045
 
-## What technologies are used for this project?
+## Soporte
 
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/d2dcbe46-2dd0-41c2-b865-349efc3d8399) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Para soporte o consultas, por favor crear un issue en el repositorio.

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { WaterStats } from "@/components/WaterStats";
 import { AddUserDialog } from "@/components/AddUserDialog";
@@ -22,7 +21,7 @@ const Index = () => {
   const {
     config,
     people,
-    isLoading,
+    isLoading: isDataLoading,
     updateConfig,
     addPerson,
     updatePerson,
@@ -34,13 +33,14 @@ const Index = () => {
     startNewMonth
   } = useWaterData();
 
+  const { isAdmin, isLoading: isAuthLoading, signOut } = useAuth();
+
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
   const [showPaymentHistoryDialog, setShowPaymentHistoryDialog] = useState(false);
   const [showAllPaymentsDialog, setShowAllPaymentsDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Person | null>(null);
-  const { isAdmin, signOut } = useAuth();
 
   const calculatePersonAmount = () => {
     return people?.length > 0
@@ -109,8 +109,15 @@ const Index = () => {
     }
   };
 
-  if (isLoading) {
-    return <div>Cargando...</div>;
+  if (isAuthLoading || isDataLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   const totalMonthlyAmount = config?.bottlePrice * config?.bottleCount || 0;

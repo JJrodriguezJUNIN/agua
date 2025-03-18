@@ -1,10 +1,10 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 interface AuthContextType {
   isAdmin: boolean;
+  isLoading: boolean;
   signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -13,15 +13,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check initial session
     const checkSession = async () => {
       try {
+        setIsLoading(true);
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error("Error checking session:", error);
-          // Clear any stale session data
           await supabase.auth.signOut();
           setIsAdmin(false);
           return;
@@ -29,15 +30,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsAdmin(session?.user?.email === "juan@admin.com");
       } catch (error) {
         console.error("Session check failed:", error);
-        // Clear any stale session data
         await supabase.auth.signOut();
         setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkSession();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       if (event === 'TOKEN_REFRESHED') {
@@ -56,6 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (username: string, password: string) => {
     try {
+      setIsLoading(true);
       if (username === "Juan" && password === "361045") {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: "juan@admin.com",
@@ -79,11 +81,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Error de autenticación:", error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setIsLoading(true);
       const { error } = await supabase.auth.signOut();
       setIsAdmin(false);
       
@@ -97,11 +102,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAdmin, signIn, signOut }}>
+    <AuthContext.Provider value={{ isAdmin, isLoading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
